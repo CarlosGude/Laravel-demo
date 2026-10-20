@@ -1,7 +1,5 @@
 <?php
 
-use App\Providers\AppServiceProvider;
-
 return [
-    AppServiceProvider::class,
+    App\Task\Infrastructure\Providers\TaskServiceProvider::class,
 ];
