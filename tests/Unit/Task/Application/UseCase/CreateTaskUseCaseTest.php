@@ -45,7 +45,7 @@ class CreateTaskUseCaseTest extends TestCase
 
         $response = $useCase->execute(
             new TaskRequest(
-                id: null,
+                uuid: null,
                 title: 'Buy milk',
                 description: 'Whole milk, 2 liters',
                 completed: false,
@@ -54,7 +54,7 @@ class CreateTaskUseCaseTest extends TestCase
             new RequestingUser(id: 1, isAdmin: false),
         );
 
-        $this->assertSame(1, $response->id);
+        $this->assertSame($persistedTask->getUuid(), $response->uuid);
         $this->assertSame('Buy milk', $response->title);
         $this->assertSame('Whole milk, 2 liters', $response->description);
         $this->assertFalse($response->completed);
@@ -75,7 +75,7 @@ class CreateTaskUseCaseTest extends TestCase
 
         $useCase->execute(
             new TaskRequest(
-                id: 1,
+                uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
                 title: 'Buy milk',
                 description: 'Whole milk, 2 liters',
                 completed: false,

@@ -30,7 +30,7 @@ class LoginUserUseCaseTest extends TestCase
 
         $response = $useCase->execute(new LoginUserRequest(email: 'jane@example.com', password: 'secret1234'));
 
-        $this->assertSame(1, $response->user->id);
+        $this->assertSame($user->getUuid(), $response->user->uuid);
         $this->assertSame('plain-text-token', $response->token);
     }
 

@@ -23,6 +23,7 @@ class ListOneTaskUseCaseTest extends TestCase
 
         $task = Task::create(
             id: 1,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
@@ -33,14 +34,14 @@ class ListOneTaskUseCaseTest extends TestCase
         );
 
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
-        $taskRepository->expects('findById')->with(1)->andReturn($task);
+        $taskRepository->expects('findByUuid')->with('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a')->andReturn($task);
 
         $useCase = new ListOneTaskUseCase($taskRepository);
 
-        $response = $useCase->execute(1, new RequestingUser(id: 1, isAdmin: false));
+        $response = $useCase->execute('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', new RequestingUser(id: 1, isAdmin: false));
 
         $this->assertNotNull($response);
-        $this->assertSame(1, $response->id);
+        $this->assertSame('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', $response->uuid);
         $this->assertSame('Buy milk', $response->title);
         $this->assertSame(['Work'], $response->categories);
     }
@@ -48,17 +49,18 @@ class ListOneTaskUseCaseTest extends TestCase
     public function test_execute_returns_null_when_the_task_does_not_exist(): void
     {
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
-        $taskRepository->expects('findById')->with(999)->andReturn(null);
+        $taskRepository->expects('findByUuid')->with('missing-uuid')->andReturn(null);
 
         $useCase = new ListOneTaskUseCase($taskRepository);
 
-        $this->assertNull($useCase->execute(999, new RequestingUser(id: 1, isAdmin: false)));
+        $this->assertNull($useCase->execute('missing-uuid', new RequestingUser(id: 1, isAdmin: false)));
     }
 
     public function test_execute_returns_null_when_a_non_admin_does_not_own_the_task(): void
     {
         $task = Task::create(
             id: 1,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: 2,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
@@ -68,17 +70,18 @@ class ListOneTaskUseCaseTest extends TestCase
         );
 
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
-        $taskRepository->expects('findById')->with(1)->andReturn($task);
+        $taskRepository->expects('findByUuid')->with('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a')->andReturn($task);
 
         $useCase = new ListOneTaskUseCase($taskRepository);
 
-        $this->assertNull($useCase->execute(1, new RequestingUser(id: 1, isAdmin: false)));
+        $this->assertNull($useCase->execute('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', new RequestingUser(id: 1, isAdmin: false)));
     }
 
     public function test_execute_returns_a_response_when_an_admin_requests_someone_elses_task(): void
     {
         $task = Task::create(
             id: 1,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: 2,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
@@ -88,13 +91,13 @@ class ListOneTaskUseCaseTest extends TestCase
         );
 
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
-        $taskRepository->expects('findById')->with(1)->andReturn($task);
+        $taskRepository->expects('findByUuid')->with('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a')->andReturn($task);
 
         $useCase = new ListOneTaskUseCase($taskRepository);
 
-        $response = $useCase->execute(1, new RequestingUser(id: 1, isAdmin: true));
+        $response = $useCase->execute('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', new RequestingUser(id: 1, isAdmin: true));
 
         $this->assertNotNull($response);
-        $this->assertSame(1, $response->id);
+        $this->assertSame('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', $response->uuid);
     }
 }

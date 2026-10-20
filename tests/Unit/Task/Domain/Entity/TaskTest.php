@@ -14,6 +14,7 @@ class TaskTest extends TestCase
         $task = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters');
 
         $this->assertNull($task->getId());
+        $this->assertNotEmpty($task->getUuid());
         $this->assertSame(1, $task->getUserId());
         $this->assertSame('Buy milk', $task->getName());
         $this->assertSame('Whole milk, 2 liters', $task->getDescription());
@@ -24,6 +25,14 @@ class TaskTest extends TestCase
         );
     }
 
+    public function test_create_new_assigns_a_different_uuid_each_time(): void
+    {
+        $first = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters');
+        $second = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters');
+
+        $this->assertNotSame($first->getUuid(), $second->getUuid());
+    }
+
     public function test_create_with_id_keeps_the_rest_of_the_data_unchanged(): void
     {
         $task = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters');
@@ -31,6 +40,7 @@ class TaskTest extends TestCase
         $taskWithId = $task->createWithId(5);
 
         $this->assertSame(5, $taskWithId->getId());
+        $this->assertSame($task->getUuid(), $taskWithId->getUuid());
         $this->assertSame($task->getUserId(), $taskWithId->getUserId());
         $this->assertSame($task->getName(), $taskWithId->getName());
         $this->assertSame($task->getDescription(), $taskWithId->getDescription());
@@ -44,6 +54,7 @@ class TaskTest extends TestCase
         $createdAt = new \DateTimeImmutable('2026-01-01T10:00:00+00:00');
         $task = Task::create(
             id: 10,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
@@ -61,6 +72,7 @@ class TaskTest extends TestCase
         );
 
         $this->assertSame(10, $changedTask->getId());
+        $this->assertSame('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', $changedTask->getUuid());
         $this->assertSame(1, $changedTask->getUserId());
         $this->assertSame('Buy milk and bread', $changedTask->getName());
         $this->assertSame('Whole milk and sourdough bread', $changedTask->getDescription());
@@ -75,6 +87,7 @@ class TaskTest extends TestCase
         $updatedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
         $task = Task::create(
             id: 10,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
@@ -85,6 +98,7 @@ class TaskTest extends TestCase
 
         $this->assertSame([
             'id' => 10,
+            'uuid' => 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             'userId' => 1,
             'name' => 'Buy milk',
             'description' => 'Whole milk, 2 liters',

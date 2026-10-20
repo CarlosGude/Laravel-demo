@@ -12,7 +12,7 @@ final readonly class UpdateTaskPortModel
      * @param array<int, string> $categoryNames
      */
     private function __construct(
-        public int $id,
+        public string $id,
         public string $title,
         public string $description,
         public bool $completed,
@@ -20,7 +20,7 @@ final readonly class UpdateTaskPortModel
     ) {
     }
 
-    public static function fromHttpRequest(Request $request, int $id): self
+    public static function fromHttpRequest(Request $request, string $id): self
     {
         return new self(
             id: $id,
@@ -34,7 +34,7 @@ final readonly class UpdateTaskPortModel
     public function toApplicationRequest(): TaskRequest
     {
         return new TaskRequest(
-            id: $this->id,
+            uuid: $this->id,
             title: $this->title,
             description: $this->description,
             completed: $this->completed,
@@ -43,12 +43,12 @@ final readonly class UpdateTaskPortModel
     }
 
     /**
-     * @return array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}
+     * @return array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}
      */
     public static function toHttpResponse(TaskResponse $task): array
     {
         return [
-            'id' => $task->id,
+            'id' => $task->uuid,
             'title' => $task->title,
             'description' => $task->description,
             'completed' => $task->completed,

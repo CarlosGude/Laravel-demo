@@ -30,7 +30,7 @@ final readonly class CreateTaskPortModel
     public function toApplicationRequest(): TaskRequest
     {
         return new TaskRequest(
-            id: null,
+            uuid: null,
             title: $this->title,
             description: $this->description,
             completed: false,
@@ -39,12 +39,12 @@ final readonly class CreateTaskPortModel
     }
 
     /**
-     * @return array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}
+     * @return array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}
      */
     public static function toHttpResponse(TaskResponse $task): array
     {
         return [
-            'id' => $task->id,
+            'id' => $task->uuid,
             'title' => $task->title,
             'description' => $task->description,
             'completed' => $task->completed,

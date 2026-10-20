@@ -40,7 +40,7 @@ final readonly class ListAllTaskUseCase
 
         return array_map(
             fn (Task $task): TaskResponse => new TaskResponse(
-                id: $task->getPersistedId(),
+                uuid: $task->getUuid(),
                 title: $task->getName(),
                 description: $task->getDescription(),
                 completed: $task->isCompleted(),

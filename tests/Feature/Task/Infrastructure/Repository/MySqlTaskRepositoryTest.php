@@ -52,19 +52,20 @@ class MySqlTaskRepositoryTest extends TestCase
         ]);
     }
 
-    public function test_find_by_id_returns_null_when_the_task_does_not_exist(): void
+    public function test_find_by_uuid_returns_null_when_the_task_does_not_exist(): void
     {
-        $this->assertNull($this->repository->findById(999));
+        $this->assertNull($this->repository->findByUuid('missing-uuid'));
     }
 
-    public function test_find_by_id_returns_the_matching_task(): void
+    public function test_find_by_uuid_returns_the_matching_task(): void
     {
         $model = TaskModel::factory()->create(['name' => self::TASK_TITLE]);
 
-        $task = $this->repository->findById($model->id);
+        $task = $this->repository->findByUuid($model->uuid);
 
         $this->assertNotNull($task);
         $this->assertSame($model->id, $task->getId());
+        $this->assertSame($model->uuid, $task->getUuid());
         $this->assertSame(self::TASK_TITLE, $task->getName());
     }
 
@@ -114,6 +115,7 @@ class MySqlTaskRepositoryTest extends TestCase
 
         $this->repository->update(Task::create(
             id: 999,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: $user->id,
             name: self::TASK_TITLE,
             description: self::TASK_DESCRIPTION,

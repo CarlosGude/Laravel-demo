@@ -40,6 +40,22 @@ class MySqlUserRepositoryTest extends TestCase
         ]);
     }
 
+    public function test_find_by_uuid_returns_null_when_the_user_does_not_exist(): void
+    {
+        $this->assertNull($this->repository->findByUuid('missing-uuid'));
+    }
+
+    public function test_find_by_uuid_returns_the_matching_user(): void
+    {
+        $model = UserModel::factory()->create(['email' => self::EMAIL]);
+
+        $user = $this->repository->findByUuid($model->uuid);
+
+        $this->assertNotNull($user);
+        $this->assertSame($model->id, $user->getId());
+        $this->assertSame($model->uuid, $user->getUuid());
+    }
+
     public function test_find_by_email_returns_null_when_the_user_does_not_exist(): void
     {
         $this->assertNull($this->repository->findByEmail('missing@example.com'));

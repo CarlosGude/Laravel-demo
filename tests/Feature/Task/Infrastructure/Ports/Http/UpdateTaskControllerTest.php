@@ -14,6 +14,7 @@ class UpdateTaskControllerTest extends TestCase
     private const TASK_TITLE = 'Buy milk';
     private const TASK_DESCRIPTION = 'Whole milk, 2 liters';
     private const UPDATED_TASK_TITLE = 'Buy milk and bread';
+    private const MISSING_UUID = '00000000-0000-0000-0000-000000000000';
 
     public function test_it_updates_an_existing_task(): void
     {
@@ -25,7 +26,7 @@ class UpdateTaskControllerTest extends TestCase
             'completed' => false,
         ]);
 
-        $response = $this->putJson("/api/tasks/{$task->id}", [
+        $response = $this->putJson("/api/tasks/{$task->uuid}", [
             'title' => self::UPDATED_TASK_TITLE,
             'description' => 'Whole milk and sourdough bread',
             'completed' => true,
@@ -34,7 +35,7 @@ class UpdateTaskControllerTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonFragment([
-            'id' => $task->id,
+            'id' => $task->uuid,
             'title' => self::UPDATED_TASK_TITLE,
             'completed' => true,
             'categories' => ['Urgent'],
@@ -50,7 +51,7 @@ class UpdateTaskControllerTest extends TestCase
     {
         $this->actingAsUser();
 
-        $response = $this->putJson('/api/tasks/999', [
+        $response = $this->putJson('/api/tasks/'.self::MISSING_UUID, [
             'title' => self::TASK_TITLE,
             'description' => self::TASK_DESCRIPTION,
             'completed' => false,
@@ -63,7 +64,7 @@ class UpdateTaskControllerTest extends TestCase
     {
         $task = TaskModel::factory()->create();
 
-        $response = $this->putJson("/api/tasks/{$task->id}", [
+        $response = $this->putJson("/api/tasks/{$task->uuid}", [
             'title' => self::TASK_TITLE,
             'description' => self::TASK_DESCRIPTION,
             'completed' => false,
@@ -77,7 +78,7 @@ class UpdateTaskControllerTest extends TestCase
         $this->actingAsUser();
         $othersTask = TaskModel::factory()->create();
 
-        $response = $this->putJson("/api/tasks/{$othersTask->id}", [
+        $response = $this->putJson("/api/tasks/{$othersTask->uuid}", [
             'title' => self::TASK_TITLE,
             'description' => self::TASK_DESCRIPTION,
             'completed' => false,
@@ -91,7 +92,7 @@ class UpdateTaskControllerTest extends TestCase
         $this->actingAsUser(UserRole::Admin);
         $othersTask = TaskModel::factory()->create(['completed' => false]);
 
-        $response = $this->putJson("/api/tasks/{$othersTask->id}", [
+        $response = $this->putJson("/api/tasks/{$othersTask->uuid}", [
             'title' => $othersTask->name,
             'description' => $othersTask->description,
             'completed' => true,

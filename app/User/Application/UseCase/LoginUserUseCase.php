@@ -29,7 +29,7 @@ final readonly class LoginUserUseCase
 
         return new AuthResponse(
             user: new UserResponse(
-                id: $user->getPersistedId(),
+                uuid: $user->getUuid(),
                 name: $user->getName(),
                 email: $user->getEmail(),
                 role: $user->getRole()->value,

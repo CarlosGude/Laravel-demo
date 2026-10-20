@@ -8,7 +8,7 @@ final readonly class TaskRequest
      * @param array<int, string> $categoryNames
      */
     public function __construct(
-        public ?int $id,
+        public ?string $uuid,
         public string $title,
         public string $description,
         public bool $completed,

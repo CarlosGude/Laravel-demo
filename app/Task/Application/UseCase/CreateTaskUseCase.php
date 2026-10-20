@@ -21,7 +21,7 @@ final readonly class CreateTaskUseCase
 
     public function execute(TaskRequest $taskRequest, RequestingUser $requestingUser): TaskResponse
     {
-        if ($taskRequest->id) {
+        if ($taskRequest->uuid) {
             throw new TaskWithIdCantBeCreated();
         }
 
@@ -40,7 +40,7 @@ final readonly class CreateTaskUseCase
         $task = $this->taskRepository->create($newTask);
 
         return new TaskResponse(
-            id: $task->getPersistedId(),
+            uuid: $task->getUuid(),
             title: $task->getName(),
             description: $task->getDescription(),
             completed: $task->isCompleted(),

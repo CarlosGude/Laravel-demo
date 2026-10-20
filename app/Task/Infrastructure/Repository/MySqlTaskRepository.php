@@ -14,9 +14,11 @@ use Illuminate\Database\Eloquent\Builder;
 
 final class MySqlTaskRepository implements TaskRepositoryInterface
 {
-    public function findById(int $id): ?Task
+    public function findByUuid(string $uuid): ?Task
     {
-        return TaskModel::query()->with('categories')->find($id)?->toEntity();
+        return TaskModel::query()->with('categories')
+            ->where(TaskColumn::Uuid->value, $uuid)
+            ->first()?->toEntity();
     }
 
     public function findAll(?TaskFilter $filter = null): TaskCollection

@@ -2,10 +2,13 @@
 
 namespace App\Task\Domain\Entity;
 
+use Ramsey\Uuid\Uuid;
+
 final readonly class Task
 {
     private function __construct(
         private ?int $id,
+        private string $uuid,
         private int $userId,
         private string $name,
         private string $description,
@@ -22,6 +25,7 @@ final readonly class Task
     // just move the same fields one level down without reducing real complexity.
     public static function create(// NOSONAR
         ?int $id,
+        string $uuid,
         int $userId,
         string $name,
         string $description,
@@ -32,6 +36,7 @@ final readonly class Task
     ): self {
         return new self(
             id: $id,
+            uuid: $uuid,
             userId: $userId,
             name: $name,
             description: $description,
@@ -50,6 +55,7 @@ final readonly class Task
     ): self {
         return new self(
             id: null,
+            uuid: Uuid::uuid4()->toString(),
             userId: $userId,
             name: $name,
             description: $description,
@@ -64,6 +70,7 @@ final readonly class Task
     {
         return new self(
             id: $id,
+            uuid: $this->uuid,
             userId: $this->userId,
             name: $this->getName(),
             description: $this->getDescription(),
@@ -83,6 +90,7 @@ final readonly class Task
     ): self {
         return new self(
             id: $this->id,
+            uuid: $this->uuid,
             userId: $this->userId,
             name: $name,
             description: $description,
@@ -101,6 +109,11 @@ final readonly class Task
     public function getPersistedId(): int
     {
         return $this->id ?? throw new \LogicException('Task has not been persisted yet.');
+    }
+
+    public function getUuid(): string
+    {
+        return $this->uuid;
     }
 
     public function getUserId(): int
@@ -144,12 +157,13 @@ final readonly class Task
     }
 
     /**
-     * @return array{id: ?int, userId: int, name: string, description: string, completed: bool, createdAt: string, updatedAt: string, categories: array<int, string>}
+     * @return array{id: ?int, uuid: string, userId: int, name: string, description: string, completed: bool, createdAt: string, updatedAt: string, categories: array<int, string>}
      */
     public function toArray(): array
     {
         return [
             'id' => $this->getId(),
+            'uuid' => $this->uuid,
             'userId' => $this->userId,
             'name' => $this->getName(),
             'description' => $this->getDescription(),

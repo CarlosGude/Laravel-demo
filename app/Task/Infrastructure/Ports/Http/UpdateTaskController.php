@@ -26,10 +26,10 @@ final readonly class UpdateTaskController
         parameters: [
             new OA\Parameter(
                 name: 'id',
-                description: 'Task id',
+                description: 'Task UUID',
                 in: 'path',
                 required: true,
-                schema: new OA\Schema(type: 'integer')
+                schema: new OA\Schema(type: 'string', format: 'uuid')
             ),
         ],
         requestBody: new OA\RequestBody(
@@ -46,7 +46,7 @@ final readonly class UpdateTaskController
             new OA\Response(response: 404, description: 'Task not found, or not owned by the requester'),
         ]
     )]
-    public function __invoke(Request $request, int $id): JsonResponse
+    public function __invoke(Request $request, string $id): JsonResponse
     {
         $portModel = UpdateTaskPortModel::fromHttpRequest($request, $id);
         $requestingUser = RequestingUserFactory::fromRequest($request);

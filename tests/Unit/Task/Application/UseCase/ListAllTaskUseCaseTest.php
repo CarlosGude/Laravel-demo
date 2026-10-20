@@ -28,6 +28,7 @@ class ListAllTaskUseCaseTest extends TestCase
 
         $task = Task::create(
             id: 1,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
@@ -45,7 +46,7 @@ class ListAllTaskUseCaseTest extends TestCase
         $responses = $useCase->execute(new RequestingUser(id: 1, isAdmin: false));
 
         $this->assertCount(1, $responses);
-        $this->assertSame(1, $responses[0]->id);
+        $this->assertSame('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', $responses[0]->uuid);
         $this->assertSame('Buy milk', $responses[0]->title);
         $this->assertSame('Whole milk, 2 liters', $responses[0]->description);
         $this->assertFalse($responses[0]->completed);

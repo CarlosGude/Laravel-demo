@@ -8,7 +8,7 @@ use OpenApi\Attributes as OA;
     schema: 'Task',
     type: 'object',
     properties: [
-        new OA\Property(property: 'id', type: 'integer', example: 1),
+        new OA\Property(property: 'id', type: 'string', format: 'uuid', example: '9d1e3a2c-1b3f-4f4a-8a9c-6f2d7c9e4b2a'),
         new OA\Property(property: 'title', type: 'string', example: 'Buy groceries'),
         new OA\Property(property: 'description', type: 'string', example: 'Milk, eggs, bread'),
         new OA\Property(property: 'completed', type: 'boolean', example: false),

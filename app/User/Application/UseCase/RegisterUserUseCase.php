@@ -35,7 +35,7 @@ final readonly class RegisterUserUseCase
 
         return new AuthResponse(
             user: new UserResponse(
-                id: $user->getPersistedId(),
+                uuid: $user->getUuid(),
                 name: $user->getName(),
                 email: $user->getEmail(),
                 role: $user->getRole()->value,

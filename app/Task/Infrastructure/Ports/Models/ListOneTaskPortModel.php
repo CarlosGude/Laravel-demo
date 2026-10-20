@@ -7,17 +7,17 @@ use App\Task\Application\Dto\Response\TaskResponse;
 final readonly class ListOneTaskPortModel
 {
     private function __construct(
-        public int $id,
+        public string $id,
     ) {
     }
 
-    public static function fromHttpRequest(int $id): self
+    public static function fromHttpRequest(string $id): self
     {
         return new self(id: $id);
     }
 
     /**
-     * @return ?array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}
+     * @return ?array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}
      */
     public static function toHttpResponse(?TaskResponse $task): ?array
     {
@@ -26,7 +26,7 @@ final readonly class ListOneTaskPortModel
         }
 
         return [
-            'id' => $task->id,
+            'id' => $task->uuid,
             'title' => $task->title,
             'description' => $task->description,
             'completed' => $task->completed,

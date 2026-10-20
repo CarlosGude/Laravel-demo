@@ -12,6 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property int $id
+ * @property string $uuid
  * @property string $name
  * @property string $email
  * @property string $password
@@ -31,6 +32,7 @@ class UserModel extends Authenticatable
     protected $table = 'users';
 
     protected $fillable = [
+        UserColumn::Uuid->value,
         UserColumn::Name->value,
         UserColumn::Email->value,
         UserColumn::Password->value,
@@ -51,6 +53,7 @@ class UserModel extends Authenticatable
     public function fillFromEntity(User $user): static
     {
         return $this->fill([
+            UserColumn::Uuid->value => $user->getUuid(),
             UserColumn::Name->value => $user->getName(),
             UserColumn::Email->value => $user->getEmail(),
             UserColumn::Password->value => $user->getPasswordHash(),
@@ -64,6 +67,7 @@ class UserModel extends Authenticatable
     {
         return User::create(
             id: $this->id,
+            uuid: $this->uuid,
             name: $this->name,
             email: $this->email,
             passwordHash: $this->password,

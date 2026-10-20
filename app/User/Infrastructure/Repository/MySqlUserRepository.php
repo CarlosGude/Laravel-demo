@@ -9,9 +9,9 @@ use App\User\Infrastructure\Models\UserModel;
 
 final class MySqlUserRepository implements UserRepositoryInterface
 {
-    public function findById(int $id): ?User
+    public function findByUuid(string $uuid): ?User
     {
-        return UserModel::query()->find($id)?->toEntity();
+        return UserModel::query()->where(UserColumn::Uuid->value, $uuid)->first()?->toEntity();
     }
 
     public function findByEmail(string $email): ?User

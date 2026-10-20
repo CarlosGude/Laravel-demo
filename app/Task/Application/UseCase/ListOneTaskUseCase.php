@@ -14,9 +14,9 @@ final readonly class ListOneTaskUseCase
 
     }
 
-    public function execute(int $id, RequestingUser $requestingUser): ?TaskResponse
+    public function execute(string $uuid, RequestingUser $requestingUser): ?TaskResponse
     {
-        $task = $this->taskRepository->findById($id);
+        $task = $this->taskRepository->findByUuid($uuid);
 
         if (!$task) {
             return null;
@@ -27,7 +27,7 @@ final readonly class ListOneTaskUseCase
         }
 
         return new TaskResponse(
-            id: $task->getPersistedId(),
+            uuid: $task->getUuid(),
             title: $task->getName(),
             description: $task->getDescription(),
             completed: $task->isCompleted(),

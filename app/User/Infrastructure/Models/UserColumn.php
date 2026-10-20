@@ -4,6 +4,7 @@ namespace App\User\Infrastructure\Models;
 
 enum UserColumn: string
 {
+    case Uuid = 'uuid';
     case Name = 'name';
     case Email = 'email';
     case Password = 'password';

@@ -21,17 +21,17 @@ final readonly class UpdateTaskUseCase
 
     public function execute(TaskRequest $taskRequest, RequestingUser $requestingUser): TaskResponse
     {
-        if (!$taskRequest->id) {
+        if (!$taskRequest->uuid) {
             throw MissingTaskIdException::create();
         }
-        $existingTask = $this->taskRepository->findById($taskRequest->id);
+        $existingTask = $this->taskRepository->findByUuid($taskRequest->uuid);
 
         if (!$existingTask) {
-            throw TaskNotFoundException::withId($taskRequest->id);
+            throw TaskNotFoundException::withUuid($taskRequest->uuid);
         }
 
         if (!$requestingUser->isAdmin && !$existingTask->isOwnedBy($requestingUser->id)) {
-            throw TaskNotFoundException::withId($taskRequest->id);
+            throw TaskNotFoundException::withUuid($taskRequest->uuid);
         }
 
         $categories = $this->categoryRepository->findOrCreateByNames(
@@ -50,7 +50,7 @@ final readonly class UpdateTaskUseCase
         $task = $this->taskRepository->update($taskToUpdate);
 
         return new TaskResponse(
-            id: $task->getPersistedId(),
+            uuid: $task->getUuid(),
             title: $task->getName(),
             description: $task->getDescription(),
             completed: $task->isCompleted(),

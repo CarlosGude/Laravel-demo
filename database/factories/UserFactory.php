@@ -6,6 +6,7 @@ use App\User\Domain\Entity\UserRole;
 use App\User\Infrastructure\Models\UserModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
+use Ramsey\Uuid\Uuid;
 
 /**
  * @extends Factory<UserModel>
@@ -22,6 +23,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'uuid' => Uuid::uuid4()->toString(),
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'password' => Hash::make('password'),

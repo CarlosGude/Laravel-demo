@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tasks', ListAllTaskController::class);
-    Route::get('/tasks/{id}', ListOneTaskController::class);
+    Route::get('/tasks/{id}', ListOneTaskController::class)->where('id', '[0-9a-fA-F-]{36}');
     Route::post('/tasks', CreateTaskController::class);
-    Route::put('/tasks/{id}', UpdateTaskController::class);
+    Route::put('/tasks/{id}', UpdateTaskController::class)->where('id', '[0-9a-fA-F-]{36}');
 });

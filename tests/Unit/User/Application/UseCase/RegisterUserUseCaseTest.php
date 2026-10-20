@@ -39,7 +39,7 @@ class RegisterUserUseCaseTest extends TestCase
             password: 'secret1234',
         ));
 
-        $this->assertSame(1, $response->user->id);
+        $this->assertSame($persistedUser->getUuid(), $response->user->uuid);
         $this->assertSame('jane@example.com', $response->user->email);
         $this->assertSame('user', $response->user->role);
         $this->assertSame('plain-text-token', $response->token);

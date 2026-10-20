@@ -23,6 +23,7 @@ class UpdateTaskUseCaseTest extends TestCase
         $createdAt = new \DateTimeImmutable('2026-01-01T10:00:00+00:00');
         $existingTask = Task::create(
             id: 1,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
@@ -42,7 +43,7 @@ class UpdateTaskUseCaseTest extends TestCase
         );
 
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
-        $taskRepository->expects('findById')->with(1)->andReturn($existingTask);
+        $taskRepository->expects('findByUuid')->with('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a')->andReturn($existingTask);
         $taskRepository->expects('update')
             ->with(\Mockery::on(function (Task $task) use ($createdAt) {
                 return $task->getId() === 1
@@ -63,7 +64,7 @@ class UpdateTaskUseCaseTest extends TestCase
 
         $response = $useCase->execute(
             new TaskRequest(
-                id: 1,
+                uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
                 title: 'Buy milk and bread',
                 description: 'Whole milk and sourdough bread',
                 completed: true,
@@ -72,7 +73,7 @@ class UpdateTaskUseCaseTest extends TestCase
             new RequestingUser(id: 1, isAdmin: false),
         );
 
-        $this->assertSame(1, $response->id);
+        $this->assertSame('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', $response->uuid);
         $this->assertSame('Buy milk and bread', $response->title);
         $this->assertTrue($response->completed);
         $this->assertSame(['Urgent'], $response->categories);
@@ -81,7 +82,7 @@ class UpdateTaskUseCaseTest extends TestCase
     public function test_execute_throws_when_the_request_has_no_id(): void
     {
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
-        $taskRepository->expects('findById')->never();
+        $taskRepository->expects('findByUuid')->never();
 
         $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
         $categoryRepository->expects('findOrCreateByNames')->never();
@@ -93,7 +94,7 @@ class UpdateTaskUseCaseTest extends TestCase
 
         $useCase->execute(
             new TaskRequest(
-                id: null,
+                uuid: null,
                 title: 'Buy milk',
                 description: 'Whole milk, 2 liters',
                 completed: false,
@@ -105,7 +106,7 @@ class UpdateTaskUseCaseTest extends TestCase
     public function test_execute_throws_task_not_found_when_the_task_does_not_exist(): void
     {
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
-        $taskRepository->expects('findById')->with(99)->andReturn(null);
+        $taskRepository->expects('findByUuid')->with('missing-uuid')->andReturn(null);
         $taskRepository->expects('update')->never();
 
         $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
@@ -117,7 +118,7 @@ class UpdateTaskUseCaseTest extends TestCase
 
         $useCase->execute(
             new TaskRequest(
-                id: 99,
+                uuid: 'missing-uuid',
                 title: 'Buy milk',
                 description: 'Whole milk, 2 liters',
                 completed: false,
@@ -130,6 +131,7 @@ class UpdateTaskUseCaseTest extends TestCase
     {
         $existingTask = Task::create(
             id: 1,
+            uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
             userId: 2,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
@@ -139,7 +141,7 @@ class UpdateTaskUseCaseTest extends TestCase
         );
 
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
-        $taskRepository->expects('findById')->with(1)->andReturn($existingTask);
+        $taskRepository->expects('findByUuid')->with('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a')->andReturn($existingTask);
         $taskRepository->expects('update')->never();
 
         $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
@@ -151,7 +153,7 @@ class UpdateTaskUseCaseTest extends TestCase
 
         $useCase->execute(
             new TaskRequest(
-                id: 1,
+                uuid: 'b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a',
                 title: 'Buy milk',
                 description: 'Whole milk, 2 liters',
                 completed: false,
