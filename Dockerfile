@@ -37,7 +37,15 @@ RUN addgroup -g ${GID} -S www && adduser -u ${UID} -S www -G www
 
 WORKDIR /var/www/html
 
-COPY --chown=www:www . .
+COPY --chown=www:www artisan composer.json composer.lock ./
+COPY --chown=www:www app ./app
+COPY --chown=www:www bootstrap ./bootstrap
+COPY --chown=www:www config ./config
+COPY --chown=www:www database ./database
+COPY --chown=www:www public ./public
+COPY --chown=www:www resources ./resources
+COPY --chown=www:www routes ./routes
+COPY --chown=www:www storage ./storage
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
