@@ -42,11 +42,23 @@ class ListModuleMigrationsCommand extends Command
             $migrations->map(fn (array $m) => [
                 $m['module'],
                 $m['migration'],
-                $ran === null ? 'unknown' : ($ran->contains($m['migration']) ? 'ran' : 'pending'),
+                $this->statusFor($ran, $m['migration']),
             ])
         );
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param ?Collection<int, string> $ran
+     */
+    private function statusFor(?Collection $ran, string $migration): string
+    {
+        if ($ran === null) {
+            return 'unknown';
+        }
+
+        return $ran->contains($migration) ? 'ran' : 'pending';
     }
 
     /**

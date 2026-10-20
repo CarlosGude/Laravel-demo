@@ -13,6 +13,9 @@ class MySqlUserRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const NAME = 'Jane Doe';
+    private const EMAIL = 'jane@example.com';
+
     private MySqlUserRepository $repository;
 
     protected function setUp(): void
@@ -24,15 +27,15 @@ class MySqlUserRepositoryTest extends TestCase
 
     public function test_create_persists_the_user_and_returns_it_with_an_id(): void
     {
-        $user = $this->repository->create(User::createNew('Jane Doe', 'jane@example.com', 'hashed-password'));
+        $user = $this->repository->create(User::createNew(self::NAME, self::EMAIL, 'hashed-password'));
 
         $this->assertNotNull($user->getId());
-        $this->assertSame('Jane Doe', $user->getName());
-        $this->assertSame('jane@example.com', $user->getEmail());
+        $this->assertSame(self::NAME, $user->getName());
+        $this->assertSame(self::EMAIL, $user->getEmail());
         $this->assertDatabaseHas('users', [
             'id' => $user->getId(),
-            'name' => 'Jane Doe',
-            'email' => 'jane@example.com',
+            'name' => self::NAME,
+            'email' => self::EMAIL,
             'role' => 'user',
         ]);
     }
@@ -44,9 +47,9 @@ class MySqlUserRepositoryTest extends TestCase
 
     public function test_find_by_email_returns_the_matching_user(): void
     {
-        $model = UserModel::factory()->create(['email' => 'jane@example.com']);
+        $model = UserModel::factory()->create(['email' => self::EMAIL]);
 
-        $user = $this->repository->findByEmail('jane@example.com');
+        $user = $this->repository->findByEmail(self::EMAIL);
 
         $this->assertNotNull($user);
         $this->assertSame($model->id, $user->getId());

@@ -19,10 +19,8 @@ class AppServiceProvider extends ServiceProvider
             static function (string $modelName): string {
                 $basename = Str::beforeLast(class_basename($modelName), 'Model');
 
-                /** @var class-string<Factory<Model>> $factoryName */
-                $factoryName = 'Database\\Factories\\'.$basename.'Factory';
-
-                return $factoryName;
+                /** @var class-string<Factory<Model>> */
+                return 'Database\\Factories\\'.$basename.'Factory';
             }
         );
     }

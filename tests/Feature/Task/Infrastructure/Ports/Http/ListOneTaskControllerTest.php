@@ -11,15 +11,17 @@ class ListOneTaskControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const TASK_TITLE = 'Buy milk';
+
     public function test_it_returns_the_matching_task(): void
     {
         $user = $this->actingAsUser();
-        $task = TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Buy milk']);
+        $task = TaskModel::factory()->create(['user_id' => $user->id, 'name' => self::TASK_TITLE]);
 
         $response = $this->getJson("/api/tasks/{$task->id}");
 
         $response->assertOk();
-        $response->assertJsonFragment(['id' => $task->id, 'title' => 'Buy milk']);
+        $response->assertJsonFragment(['id' => $task->id, 'title' => self::TASK_TITLE]);
     }
 
     public function test_it_returns_a_404_when_the_task_does_not_exist(): void
@@ -54,11 +56,11 @@ class ListOneTaskControllerTest extends TestCase
     public function test_an_admin_can_see_another_users_task(): void
     {
         $this->actingAsUser(UserRole::Admin);
-        $othersTask = TaskModel::factory()->create(['name' => 'Buy milk']);
+        $othersTask = TaskModel::factory()->create(['name' => self::TASK_TITLE]);
 
         $response = $this->getJson("/api/tasks/{$othersTask->id}");
 
         $response->assertOk();
-        $response->assertJsonFragment(['title' => 'Buy milk']);
+        $response->assertJsonFragment(['title' => self::TASK_TITLE]);
     }
 }

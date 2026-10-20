@@ -19,6 +19,12 @@ class MySqlTaskRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const TASK_TITLE = 'Buy milk';
+    private const TASK_DESCRIPTION = 'Whole milk, 2 liters';
+    private const UPDATED_TASK_TITLE = 'Buy milk and bread';
+    private const DATE_JAN = '2026-01-01 10:00:00';
+    private const DATE_FEB = '2026-02-01 10:00:00';
+
     private MySqlTaskRepository $repository;
 
     protected function setUp(): void
@@ -32,16 +38,16 @@ class MySqlTaskRepositoryTest extends TestCase
     {
         $user = UserModel::factory()->create();
 
-        $task = $this->repository->create(Task::createNew($user->id, 'Buy milk', 'Whole milk, 2 liters'));
+        $task = $this->repository->create(Task::createNew($user->id, self::TASK_TITLE, self::TASK_DESCRIPTION));
 
         $this->assertNotNull($task->getId());
-        $this->assertSame('Buy milk', $task->getName());
-        $this->assertSame('Whole milk, 2 liters', $task->getDescription());
+        $this->assertSame(self::TASK_TITLE, $task->getName());
+        $this->assertSame(self::TASK_DESCRIPTION, $task->getDescription());
         $this->assertFalse($task->isCompleted());
         $this->assertDatabaseHas('tasks', [
             'id' => $task->getId(),
-            'name' => 'Buy milk',
-            'description' => 'Whole milk, 2 liters',
+            'name' => self::TASK_TITLE,
+            'description' => self::TASK_DESCRIPTION,
             'completed' => false,
         ]);
     }
@@ -53,13 +59,13 @@ class MySqlTaskRepositoryTest extends TestCase
 
     public function test_find_by_id_returns_the_matching_task(): void
     {
-        $model = TaskModel::factory()->create(['name' => 'Buy milk']);
+        $model = TaskModel::factory()->create(['name' => self::TASK_TITLE]);
 
         $task = $this->repository->findById($model->id);
 
         $this->assertNotNull($task);
         $this->assertSame($model->id, $task->getId());
-        $this->assertSame('Buy milk', $task->getName());
+        $this->assertSame(self::TASK_TITLE, $task->getName());
     }
 
     public function test_find_all_returns_every_persisted_task(): void
@@ -75,14 +81,14 @@ class MySqlTaskRepositoryTest extends TestCase
     public function test_update_persists_the_changes_on_an_existing_task(): void
     {
         $model = TaskModel::factory()->create([
-            'name' => 'Buy milk',
-            'description' => 'Whole milk, 2 liters',
+            'name' => self::TASK_TITLE,
+            'description' => self::TASK_DESCRIPTION,
             'completed' => false,
         ]);
         $existingTask = $model->toEntity();
 
         $updatedTask = $existingTask->withChanges(
-            name: 'Buy milk and bread',
+            name: self::UPDATED_TASK_TITLE,
             description: 'Whole milk and sourdough bread',
             completed: true,
             updatedAt: new \DateTimeImmutable(),
@@ -90,11 +96,11 @@ class MySqlTaskRepositoryTest extends TestCase
 
         $task = $this->repository->update($updatedTask);
 
-        $this->assertSame('Buy milk and bread', $task->getName());
+        $this->assertSame(self::UPDATED_TASK_TITLE, $task->getName());
         $this->assertTrue($task->isCompleted());
         $this->assertDatabaseHas('tasks', [
             'id' => $model->id,
-            'name' => 'Buy milk and bread',
+            'name' => self::UPDATED_TASK_TITLE,
             'description' => 'Whole milk and sourdough bread',
             'completed' => true,
         ]);
@@ -109,8 +115,8 @@ class MySqlTaskRepositoryTest extends TestCase
         $this->repository->update(Task::create(
             id: 999,
             userId: $user->id,
-            name: 'Buy milk',
-            description: 'Whole milk, 2 liters',
+            name: self::TASK_TITLE,
+            description: self::TASK_DESCRIPTION,
             completed: false,
             createdAt: new \DateTimeImmutable(),
             updatedAt: new \DateTimeImmutable(),
@@ -124,8 +130,8 @@ class MySqlTaskRepositoryTest extends TestCase
         $task = $this->repository->create(
             Task::createNew(
                 $work->user_id,
-                'Buy milk',
-                'Whole milk, 2 liters',
+                self::TASK_TITLE,
+                self::TASK_DESCRIPTION,
                 new CategoryCollection($work->toEntity())
             )
         );
@@ -150,8 +156,8 @@ class MySqlTaskRepositoryTest extends TestCase
 
     public function test_find_all_filters_by_created_at_range(): void
     {
-        TaskModel::factory()->create(['created_at' => '2026-01-01 10:00:00']);
-        $inRange = TaskModel::factory()->create(['created_at' => '2026-02-01 10:00:00']);
+        TaskModel::factory()->create(['created_at' => self::DATE_JAN]);
+        $inRange = TaskModel::factory()->create(['created_at' => self::DATE_FEB]);
         TaskModel::factory()->create(['created_at' => '2026-03-01 10:00:00']);
 
         $tasks = $this->repository->findAll(new TaskFilter(
@@ -178,8 +184,8 @@ class MySqlTaskRepositoryTest extends TestCase
 
     public function test_find_all_sorts_ascending_by_created_at(): void
     {
-        $second = TaskModel::factory()->create(['created_at' => '2026-02-01 10:00:00']);
-        $first = TaskModel::factory()->create(['created_at' => '2026-01-01 10:00:00']);
+        $second = TaskModel::factory()->create(['created_at' => self::DATE_FEB]);
+        $first = TaskModel::factory()->create(['created_at' => self::DATE_JAN]);
 
         $tasks = $this->repository->findAll(new TaskFilter(
             sortBy: TaskSortField::CreatedAt,
@@ -193,9 +199,9 @@ class MySqlTaskRepositoryTest extends TestCase
     public function test_find_all_sorts_descending_by_updated_at(): void
     {
         $older = TaskModel::factory()->create();
-        $older->update(['updated_at' => '2026-01-01 10:00:00']);
+        $older->update(['updated_at' => self::DATE_JAN]);
         $newer = TaskModel::factory()->create();
-        $newer->update(['updated_at' => '2026-02-01 10:00:00']);
+        $newer->update(['updated_at' => self::DATE_FEB]);
 
         $tasks = $this->repository->findAll(new TaskFilter(
             sortBy: TaskSortField::UpdatedAt,

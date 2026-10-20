@@ -12,13 +12,17 @@ class ListAllTaskControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const TASKS_ENDPOINT = '/api/tasks';
+    private const DATE_JAN = '2026-01-01 10:00:00';
+    private const DATE_FEB = '2026-02-01 10:00:00';
+
     public function test_it_lists_the_authenticated_users_tasks(): void
     {
         $user = $this->actingAsUser();
         TaskModel::factory()->count(2)->create(['user_id' => $user->id]);
         TaskModel::factory()->count(3)->create();
 
-        $response = $this->getJson('/api/tasks');
+        $response = $this->getJson(self::TASKS_ENDPOINT);
 
         $response->assertOk();
         $response->assertJsonCount(2);
@@ -28,7 +32,7 @@ class ListAllTaskControllerTest extends TestCase
     {
         $this->actingAsUser();
 
-        $response = $this->getJson('/api/tasks');
+        $response = $this->getJson(self::TASKS_ENDPOINT);
 
         $response->assertOk();
         $response->assertExactJson([]);
@@ -36,7 +40,7 @@ class ListAllTaskControllerTest extends TestCase
 
     public function test_it_requires_authentication(): void
     {
-        $response = $this->getJson('/api/tasks');
+        $response = $this->getJson(self::TASKS_ENDPOINT);
 
         $response->assertStatus(401);
     }
@@ -46,7 +50,7 @@ class ListAllTaskControllerTest extends TestCase
         $this->actingAsUser(UserRole::Admin);
         TaskModel::factory()->count(3)->create();
 
-        $response = $this->getJson('/api/tasks');
+        $response = $this->getJson(self::TASKS_ENDPOINT);
 
         $response->assertOk();
         $response->assertJsonCount(3);
@@ -92,12 +96,12 @@ class ListAllTaskControllerTest extends TestCase
         TaskModel::factory()->create([
             'user_id' => $user->id,
             'name' => 'Before range',
-            'created_at' => '2026-01-01 10:00:00',
+            'created_at' => self::DATE_JAN,
         ]);
         TaskModel::factory()->create([
             'user_id' => $user->id,
             'name' => 'Inside range',
-            'created_at' => '2026-02-01 10:00:00',
+            'created_at' => self::DATE_FEB,
         ]);
         TaskModel::factory()->create([
             'user_id' => $user->id,
@@ -130,8 +134,8 @@ class ListAllTaskControllerTest extends TestCase
     public function test_it_sorts_ascending_by_created_at(): void
     {
         $user = $this->actingAsUser();
-        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Second', 'created_at' => '2026-02-01 10:00:00']);
-        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'First', 'created_at' => '2026-01-01 10:00:00']);
+        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Second', 'created_at' => self::DATE_FEB]);
+        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'First', 'created_at' => self::DATE_JAN]);
 
         $response = $this->getJson('/api/tasks?sort_by=created_at&sort_direction=asc');
 
@@ -144,9 +148,9 @@ class ListAllTaskControllerTest extends TestCase
     {
         $user = $this->actingAsUser();
         $older = TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Older update']);
-        $older->update(['updated_at' => '2026-01-01 10:00:00']);
+        $older->update(['updated_at' => self::DATE_JAN]);
         $newer = TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Newer update']);
-        $newer->update(['updated_at' => '2026-02-01 10:00:00']);
+        $newer->update(['updated_at' => self::DATE_FEB]);
 
         $response = $this->getJson('/api/tasks?sort_by=updated_at&sort_direction=desc');
 

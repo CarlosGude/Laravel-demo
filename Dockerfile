@@ -15,9 +15,17 @@ RUN apk add --no-cache \
     freetype-dev \
     libjpeg-turbo-dev \
     icu-dev \
-    $PHPIZE_DEPS
-
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    autoconf \
+    dpkg-dev \
+    dpkg \
+    file \
+    g++ \
+    gcc \
+    libc-dev \
+    make \
+    pkgconf \
+    re2c \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
         mbstring \
@@ -27,13 +35,12 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         gd \
         zip \
         intl \
-        opcache
-
-RUN pecl install redis && docker-php-ext-enable redis
+        opcache \
+    && pecl install redis && docker-php-ext-enable redis
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-RUN addgroup -g ${GID} -S www && adduser -u ${UID} -S www -G www
+RUN addgroup -g "${GID}" -S www && adduser -u "${UID}" -S www -G www
 
 WORKDIR /var/www/html
 

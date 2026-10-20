@@ -11,26 +11,29 @@ class LoginUserControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const EMAIL = 'jane@example.com';
+    private const LOGIN_ENDPOINT = '/api/auth/login';
+
     public function test_it_logs_in_with_valid_credentials(): void
     {
         UserModel::factory()->create([
-            'email' => 'jane@example.com',
+            'email' => self::EMAIL,
             'password' => Hash::make('secret1234'),
         ]);
 
-        $response = $this->postJson('/api/auth/login', [
-            'email' => 'jane@example.com',
+        $response = $this->postJson(self::LOGIN_ENDPOINT, [
+            'email' => self::EMAIL,
             'password' => 'secret1234',
         ]);
 
         $response->assertOk();
-        $response->assertJsonFragment(['email' => 'jane@example.com']);
+        $response->assertJsonFragment(['email' => self::EMAIL]);
         $response->assertJsonStructure(['user' => ['id', 'name', 'email', 'role'], 'token']);
     }
 
     public function test_it_rejects_an_unknown_email(): void
     {
-        $response = $this->postJson('/api/auth/login', [
+        $response = $this->postJson(self::LOGIN_ENDPOINT, [
             'email' => 'missing@example.com',
             'password' => 'secret1234',
         ]);
@@ -41,12 +44,12 @@ class LoginUserControllerTest extends TestCase
     public function test_it_rejects_an_invalid_password(): void
     {
         UserModel::factory()->create([
-            'email' => 'jane@example.com',
+            'email' => self::EMAIL,
             'password' => Hash::make('secret1234'),
         ]);
 
-        $response = $this->postJson('/api/auth/login', [
-            'email' => 'jane@example.com',
+        $response = $this->postJson(self::LOGIN_ENDPOINT, [
+            'email' => self::EMAIL,
             'password' => 'wrong-password',
         ]);
 

@@ -17,7 +17,10 @@ final readonly class Task
 
     }
 
-    public static function create(
+    // Every field is explicit on purpose: this is the full-reconstitution factory
+    // (see docs/ARCHITECTURE.md #3), so splitting it into a parameter object would
+    // just move the same fields one level down without reducing real complexity.
+    public static function create(// NOSONAR
         ?int $id,
         int $userId,
         string $name,
