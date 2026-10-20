@@ -42,6 +42,15 @@ docker compose down                       # detener todo
 docker compose down -v                    # detener y borrar volúmenes (datos de MySQL/Redis)
 ```
 
+También hay un `Makefile` con los atajos más comunes (`make help` para verlos todos):
+
+```bash
+make up                          # levantar contenedores
+make artisan cmd="migrate"       # artisan migrate
+make shell                       # shell dentro del contenedor app
+make down                        # detener
+```
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
