@@ -4,8 +4,11 @@ namespace Tests\Unit\Task\Application\UseCase;
 
 use App\Task\Application\Dto\Request\TaskRequest;
 use App\Task\Application\UseCase\UpdateTaskUseCase;
+use App\Task\Domain\Entity\Category;
+use App\Task\Domain\Entity\CategoryCollection;
 use App\Task\Domain\Entity\Task;
 use App\Task\Domain\Exceptions\TaskNotFoundException;
+use App\Task\Domain\Repository\CategoryRepositoryInterface;
 use App\Task\Domain\Repository\TaskRepositoryInterface;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
@@ -26,45 +29,59 @@ class UpdateTaskUseCaseTest extends TestCase
             updatedAt: $createdAt,
         );
 
+        $urgent = Category::createNew('Urgent')->createWithId(2);
+
         $updatedTask = $existingTask->withChanges(
             name: 'Buy milk and bread',
             description: 'Whole milk and sourdough bread',
             completed: true,
             updatedAt: new \DateTimeImmutable(),
+            categories: new CategoryCollection($urgent),
         );
 
-        $repository = \Mockery::mock(TaskRepositoryInterface::class);
-        $repository->expects('findById')->with(1)->andReturn($existingTask);
-        $repository->expects('update')
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findById')->with(1)->andReturn($existingTask);
+        $taskRepository->expects('update')
             ->with(\Mockery::on(function (Task $task) use ($createdAt) {
                 return $task->getId() === 1
                     && $task->getName() === 'Buy milk and bread'
                     && $task->getDescription() === 'Whole milk and sourdough bread'
                     && $task->isCompleted() === true
-                    && $task->getCreatedAt() == $createdAt;
+                    && $task->getCreatedAt() == $createdAt
+                    && $task->getCategories()->names() === ['Urgent'];
             }))
             ->andReturn($updatedTask);
 
-        $useCase = new UpdateTaskUseCase($repository);
+        $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
+        $categoryRepository->expects('findOrCreateByNames')
+            ->with(['Urgent'])
+            ->andReturn(new CategoryCollection($urgent));
+
+        $useCase = new UpdateTaskUseCase($taskRepository, $categoryRepository);
 
         $response = $useCase->execute(new TaskRequest(
             id: 1,
             title: 'Buy milk and bread',
             description: 'Whole milk and sourdough bread',
             completed: true,
+            categoryNames: ['Urgent'],
         ));
 
         $this->assertSame(1, $response->id);
         $this->assertSame('Buy milk and bread', $response->title);
         $this->assertTrue($response->completed);
+        $this->assertSame(['Urgent'], $response->categories);
     }
 
     public function test_execute_throws_when_the_request_has_no_id(): void
     {
-        $repository = \Mockery::mock(TaskRepositoryInterface::class);
-        $repository->expects('findById')->never();
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findById')->never();
 
-        $useCase = new UpdateTaskUseCase($repository);
+        $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
+        $categoryRepository->expects('findOrCreateByNames')->never();
+
+        $useCase = new UpdateTaskUseCase($taskRepository, $categoryRepository);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Task id is required');
@@ -79,11 +96,14 @@ class UpdateTaskUseCaseTest extends TestCase
 
     public function test_execute_throws_task_not_found_when_the_task_does_not_exist(): void
     {
-        $repository = \Mockery::mock(TaskRepositoryInterface::class);
-        $repository->expects('findById')->with(99)->andReturn(null);
-        $repository->expects('update')->never();
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findById')->with(99)->andReturn(null);
+        $taskRepository->expects('update')->never();
 
-        $useCase = new UpdateTaskUseCase($repository);
+        $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
+        $categoryRepository->expects('findOrCreateByNames')->never();
+
+        $useCase = new UpdateTaskUseCase($taskRepository, $categoryRepository);
 
         $this->expectException(TaskNotFoundException::class);
 

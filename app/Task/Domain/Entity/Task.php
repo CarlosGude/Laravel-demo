@@ -11,6 +11,7 @@ final readonly class Task
         private bool $completed,
         private \DateTimeImmutable $createdAt,
         private \DateTimeImmutable $updatedAt,
+        private CategoryCollection $categories,
     ) {
 
     }
@@ -22,6 +23,7 @@ final readonly class Task
         bool $completed,
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt,
+        ?CategoryCollection $categories = null,
     ): self {
         return new self(
             id: $id,
@@ -29,11 +31,12 @@ final readonly class Task
             description: $description,
             completed: $completed,
             createdAt: $createdAt,
-            updatedAt: $updatedAt
+            updatedAt: $updatedAt,
+            categories: $categories ?? new CategoryCollection(),
         );
     }
 
-    public static function createNew(string $name, string $description): self
+    public static function createNew(string $name, string $description, ?CategoryCollection $categories = null): self
     {
         return new self(
             id: null,
@@ -42,6 +45,7 @@ final readonly class Task
             completed: false,
             createdAt: new \DateTimeImmutable(),
             updatedAt: new \DateTimeImmutable(),
+            categories: $categories ?? new CategoryCollection(),
         );
     }
 
@@ -53,7 +57,8 @@ final readonly class Task
             description: $this->getDescription(),
             completed: $this->isCompleted(),
             createdAt: $this->getCreatedAt(),
-            updatedAt: $this->getUpdatedAt()
+            updatedAt: $this->getUpdatedAt(),
+            categories: $this->categories,
         );
     }
 
@@ -62,6 +67,7 @@ final readonly class Task
         string $description,
         bool $completed,
         \DateTimeImmutable $updatedAt,
+        ?CategoryCollection $categories = null,
     ): self {
         return new self(
             id: $this->id,
@@ -69,7 +75,8 @@ final readonly class Task
             description: $description,
             completed: $completed,
             createdAt: $this->createdAt,
-            updatedAt: $updatedAt
+            updatedAt: $updatedAt,
+            categories: $categories ?? $this->categories,
         );
     }
 
@@ -108,8 +115,13 @@ final readonly class Task
         return $this->updatedAt;
     }
 
+    public function getCategories(): CategoryCollection
+    {
+        return $this->categories;
+    }
+
     /**
-     * @return array{id: ?int, name: string, description: string, completed: bool, createdAt: string, updatedAt: string}
+     * @return array{id: ?int, name: string, description: string, completed: bool, createdAt: string, updatedAt: string, categories: array<int, string>}
      */
     public function toArray(): array
     {
@@ -120,6 +132,7 @@ final readonly class Task
             'completed' => $this->isCompleted(),
             'createdAt' => $this->createdAt->format(DATE_ATOM),
             'updatedAt' => $this->updatedAt->format(DATE_ATOM),
+            'categories' => $this->categories->names(),
         ];
     }
 

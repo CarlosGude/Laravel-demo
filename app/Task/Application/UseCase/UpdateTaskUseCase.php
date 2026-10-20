@@ -5,12 +5,14 @@ namespace App\Task\Application\UseCase;
 use App\Task\Application\Dto\Request\TaskRequest;
 use App\Task\Application\Dto\Response\TaskResponse;
 use App\Task\Domain\Exceptions\TaskNotFoundException;
+use App\Task\Domain\Repository\CategoryRepositoryInterface;
 use App\Task\Domain\Repository\TaskRepositoryInterface;
 
 final readonly class UpdateTaskUseCase
 {
     public function __construct(
-        private TaskRepositoryInterface $taskRepository
+        private TaskRepositoryInterface $taskRepository,
+        private CategoryRepositoryInterface $categoryRepository,
     ) {
 
     }
@@ -26,11 +28,14 @@ final readonly class UpdateTaskUseCase
             throw TaskNotFoundException::withId($taskRequest->id);
         }
 
+        $categories = $this->categoryRepository->findOrCreateByNames($taskRequest->categoryNames);
+
         $taskToUpdate = $existingTask->withChanges(
             name: $taskRequest->title,
             description: $taskRequest->description,
             completed: $taskRequest->completed,
             updatedAt: new \DateTimeImmutable(),
+            categories: $categories,
         );
 
         $task = $this->taskRepository->update($taskToUpdate);
@@ -41,7 +46,8 @@ final readonly class UpdateTaskUseCase
             description: $task->getDescription(),
             completed: $task->isCompleted(),
             createdAt: $task->getCreatedAt(),
-            updatedAt: $task->getUpdatedAt()
+            updatedAt: $task->getUpdatedAt(),
+            categories: $task->getCategories()->names(),
         );
     }
 }

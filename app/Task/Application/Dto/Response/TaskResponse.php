@@ -4,6 +4,9 @@ namespace App\Task\Application\Dto\Response;
 
 final readonly class TaskResponse
 {
+    /**
+     * @param array<int, string> $categories
+     */
     public function __construct(
         public int $id,
         public string $title,
@@ -11,6 +14,7 @@ final readonly class TaskResponse
         public bool $completed,
         public ?\DateTimeImmutable $createdAt,
         public ?\DateTimeImmutable $updatedAt,
+        public array $categories = [],
     ) {
 
     }

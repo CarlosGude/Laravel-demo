@@ -27,7 +27,8 @@ final readonly class ListOneTaskUseCase
             description: $task->getDescription(),
             completed: $task->isCompleted(),
             createdAt: $task->getCreatedAt(),
-            updatedAt: $task->getUpdatedAt()
+            updatedAt: $task->getUpdatedAt(),
+            categories: $task->getCategories()->names(),
         );
     }
 }

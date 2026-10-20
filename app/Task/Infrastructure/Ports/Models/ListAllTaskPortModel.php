@@ -8,7 +8,7 @@ final readonly class ListAllTaskPortModel
 {
     /**
      * @param TaskResponse[] $tasks
-     * @return array<int, array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string}>
+     * @return array<int, array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}>
      */
     public static function toHttpResponse(array $tasks): array
     {
@@ -20,6 +20,7 @@ final readonly class ListAllTaskPortModel
                 'completed' => $task->completed,
                 'created_at' => $task->createdAt?->format(DATE_ATOM),
                 'updated_at' => $task->updatedAt?->format(DATE_ATOM),
+                'categories' => $task->categories,
             ],
             $tasks
         );

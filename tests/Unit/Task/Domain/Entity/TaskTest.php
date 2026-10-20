@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Task\Domain\Entity;
 
+use App\Task\Domain\Entity\Category;
+use App\Task\Domain\Entity\CategoryCollection;
 use App\Task\Domain\Entity\Task;
 use PHPUnit\Framework\TestCase;
 
@@ -83,6 +85,41 @@ class TaskTest extends TestCase
             'completed' => true,
             'createdAt' => $createdAt->format(DATE_ATOM),
             'updatedAt' => $updatedAt->format(DATE_ATOM),
+            'categories' => [],
         ], $task->toArray());
+    }
+
+    public function test_create_new_accepts_categories_and_with_changes_can_replace_them(): void
+    {
+        $work = Category::createNew('Work')->createWithId(1);
+        $task = Task::createNew('Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work));
+
+        $this->assertSame(['Work'], $task->getCategories()->names());
+
+        $urgent = Category::createNew('Urgent')->createWithId(2);
+        $recategorized = $task->withChanges(
+            name: $task->getName(),
+            description: $task->getDescription(),
+            completed: $task->isCompleted(),
+            updatedAt: new \DateTimeImmutable(),
+            categories: new CategoryCollection($urgent),
+        );
+
+        $this->assertSame(['Urgent'], $recategorized->getCategories()->names());
+    }
+
+    public function test_with_changes_without_categories_keeps_the_existing_ones(): void
+    {
+        $work = Category::createNew('Work')->createWithId(1);
+        $task = Task::createNew('Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work));
+
+        $updated = $task->withChanges(
+            name: 'Buy milk and bread',
+            description: $task->getDescription(),
+            completed: true,
+            updatedAt: new \DateTimeImmutable(),
+        );
+
+        $this->assertSame(['Work'], $updated->getCategories()->names());
     }
 }

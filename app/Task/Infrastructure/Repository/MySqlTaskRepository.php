@@ -12,13 +12,13 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
 {
     public function findById(int $id): ?Task
     {
-        return TaskModel::query()->find($id)?->toEntity();
+        return TaskModel::query()->with('categories')->find($id)?->toEntity();
     }
 
     public function findAll(): TaskCollection
     {
         return TaskCollection::fromArray(
-            TaskModel::query()->get()->map(fn (TaskModel $model): Task => $model->toEntity())->all()
+            TaskModel::query()->with('categories')->get()->map(fn (TaskModel $model): Task => $model->toEntity())->all()
         );
     }
 
@@ -26,6 +26,7 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
     {
         $model = new TaskModel();
         $model->fillFromEntity($task)->save();
+        $model->categories()->sync($task->getCategories()->ids());
 
         return $model->toEntity();
     }
@@ -39,6 +40,7 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
         }
 
         $model->fillFromEntity($task)->save();
+        $model->categories()->sync($task->getCategories()->ids());
 
         return $model->toEntity();
     }

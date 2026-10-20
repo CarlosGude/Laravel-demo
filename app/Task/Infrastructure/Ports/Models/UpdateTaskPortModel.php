@@ -8,11 +8,15 @@ use Illuminate\Http\Request;
 
 final readonly class UpdateTaskPortModel
 {
+    /**
+     * @param array<int, string> $categoryNames
+     */
     private function __construct(
         public int $id,
         public string $title,
         public string $description,
         public bool $completed,
+        public array $categoryNames,
     ) {
     }
 
@@ -23,6 +27,7 @@ final readonly class UpdateTaskPortModel
             title: $request->string('title')->toString(),
             description: $request->string('description')->toString(),
             completed: $request->boolean('completed'),
+            categoryNames: $request->array('category_names'),
         );
     }
 
@@ -33,11 +38,12 @@ final readonly class UpdateTaskPortModel
             title: $this->title,
             description: $this->description,
             completed: $this->completed,
+            categoryNames: $this->categoryNames,
         );
     }
 
     /**
-     * @return array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string}
+     * @return array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}
      */
     public static function toHttpResponse(TaskResponse $task): array
     {
@@ -48,6 +54,7 @@ final readonly class UpdateTaskPortModel
             'completed' => $task->completed,
             'created_at' => $task->createdAt?->format(DATE_ATOM),
             'updated_at' => $task->updatedAt?->format(DATE_ATOM),
+            'categories' => $task->categories,
         ];
     }
 }

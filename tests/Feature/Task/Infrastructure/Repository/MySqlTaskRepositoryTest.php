@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Task\Infrastructure\Repository;
 
+use App\Task\Domain\Entity\CategoryCollection;
 use App\Task\Domain\Entity\Task;
 use App\Task\Domain\Exceptions\TaskNotFoundException;
+use App\Task\Infrastructure\Models\CategoryModel;
 use App\Task\Infrastructure\Models\TaskModel;
 use App\Task\Infrastructure\Repository\MySqlTaskRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -104,5 +106,46 @@ class MySqlTaskRepositoryTest extends TestCase
             createdAt: new \DateTimeImmutable(),
             updatedAt: new \DateTimeImmutable(),
         ));
+    }
+
+    public function test_create_persists_the_categories_on_the_pivot_table(): void
+    {
+        $work = CategoryModel::factory()->create(['name' => 'Work']);
+
+        $task = $this->repository->create(
+            Task::createNew('Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work->toEntity()))
+        );
+
+        $this->assertSame(['Work'], $task->getCategories()->names());
+        $this->assertDatabaseHas('category_task', [
+            'task_id' => $task->getId(),
+            'category_id' => $work->id,
+        ]);
+    }
+
+    public function test_update_replaces_the_existing_categories(): void
+    {
+        $work = CategoryModel::factory()->create(['name' => 'Work']);
+        $urgent = CategoryModel::factory()->create(['name' => 'Urgent']);
+
+        $model = TaskModel::factory()->create();
+        $model->categories()->sync([$work->id]);
+        $existingTask = $model->toEntity();
+
+        $updatedTask = $existingTask->withChanges(
+            name: $existingTask->getName(),
+            description: $existingTask->getDescription(),
+            completed: $existingTask->isCompleted(),
+            updatedAt: new \DateTimeImmutable(),
+            categories: new CategoryCollection($urgent->toEntity()),
+        );
+
+        $task = $this->repository->update($updatedTask);
+
+        $this->assertSame(['Urgent'], $task->getCategories()->names());
+        $this->assertDatabaseMissing('category_task', [
+            'task_id' => $task->getId(),
+            'category_id' => $work->id,
+        ]);
     }
 }

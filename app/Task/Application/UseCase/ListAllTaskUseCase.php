@@ -28,7 +28,8 @@ final readonly class ListAllTaskUseCase
                 description: $task->getDescription(),
                 completed: $task->isCompleted(),
                 createdAt: $task->getCreatedAt(),
-                updatedAt: $task->getUpdatedAt()
+                updatedAt: $task->getUpdatedAt(),
+                categories: $task->getCategories()->names(),
             ),
             $tasks->toArray()
         );

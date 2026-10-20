@@ -17,7 +17,7 @@ final readonly class ListOneTaskPortModel
     }
 
     /**
-     * @return ?array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string}
+     * @return ?array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}
      */
     public static function toHttpResponse(?TaskResponse $task): ?array
     {
@@ -32,6 +32,7 @@ final readonly class ListOneTaskPortModel
             'completed' => $task->completed,
             'created_at' => $task->createdAt?->format(DATE_ATOM),
             'updated_at' => $task->updatedAt?->format(DATE_ATOM),
+            'categories' => $task->categories,
         ];
     }
 }
