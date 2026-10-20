@@ -1,0 +1,387 @@
+{
+	"info": {
+		"name": "Task Manager API",
+		"description": "Requests to exercise the Task Manager API demo: register/login/logout and task CRUD with filtering. Import this file plus `TaskManagerAPI.postman_environment.json` into Postman.\n\nRun \"Register\" or \"Login\" first \u2014 their test script stores the Sanctum token in the `token` collection variable, which every other request sends as a Bearer token automatically. \"Create Task\" likewise stores the created id in `task_id` for \"Get Task by Id\" and \"Update Task\".",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "task_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"auth": {
+							"type": "noauth"
+						},
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Doe\",\n    \"email\": \"jane@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Creates a new user and returns an API token. 422 if the email is already registered."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.token);",
+									"    pm.collectionVariables.set('user_id', json.user.id);",
+									"    console.log('Stored token for user #' + json.user.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"auth": {
+							"type": "noauth"
+						},
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"jane@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Exchanges email/password for a fresh API token. 401 on invalid credentials."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const json = pm.response.json();",
+									"    pm.collectionVariables.set('token', json.token);",
+									"    pm.collectionVariables.set('user_id', json.user.id);",
+									"    console.log('Stored token for user #' + json.user.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Buy groceries\",\n    \"description\": \"Milk, eggs, bread\",\n    \"category_names\": [\"Personal\", \"Errands\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							]
+						},
+						"description": "Creates a task owned by the authenticated user, creating any new category names on the fly."
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const json = pm.response.json();",
+									"    pm.collectionVariables.set('task_id', json.id);",
+									"    console.log('Stored task_id = ' + json.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"response": []
+				},
+				{
+					"name": "List Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tasks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "completed",
+									"value": "",
+									"description": "true | false",
+									"disabled": true
+								},
+								{
+									"key": "category",
+									"value": "",
+									"description": "exact category name",
+									"disabled": true
+								},
+								{
+									"key": "date",
+									"value": "",
+									"description": "YYYY-MM-DD, exact creation date",
+									"disabled": true
+								},
+								{
+									"key": "created_from",
+									"value": "",
+									"description": "ISO date/time, inclusive",
+									"disabled": true
+								},
+								{
+									"key": "created_to",
+									"value": "",
+									"description": "ISO date/time, inclusive",
+									"disabled": true
+								},
+								{
+									"key": "sort_by",
+									"value": "created_at",
+									"description": "created_at | updated_at",
+									"disabled": true
+								},
+								{
+									"key": "sort_direction",
+									"value": "desc",
+									"description": "asc | desc",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Lists the authenticated user's tasks (every task, for admins). All query parameters are optional and disabled by default \u2014 enable the ones you want to try."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Task by Id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Fetches a single task. Returns 404 both when the task doesn't exist and when it belongs to another (non-admin) user."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Buy groceries\",\n    \"description\": \"Milk, eggs, bread, butter\",\n    \"completed\": true,\n    \"category_names\": [\"Personal\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Replaces a task's fields and category assignments. Only the owner or an admin can update it."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Logout",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/auth/logout",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"logout"
+					]
+				},
+				"description": "Revokes the current Sanctum token. Requires the Bearer token from Register/Login."
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    pm.collectionVariables.set('token', '');",
+							"    console.log('Cleared stored token');",
+							"}"
+						]
+					}
+				}
+			],
+			"response": []
+		}
+	]
+}

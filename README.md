@@ -1,102 +1,111 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Task Manager API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A small Task Manager REST API built with Laravel, used as a **framework-agnosticism demo**: the goal
+isn't the to-do list itself, it's showing that architecture and engineering practice — hexagonal/DDD
+layering, dependency inversion, static analysis, enforced boundaries, test strategy — transfer cleanly
+between frameworks (in this case, from Symfony to Laravel).
 
-## Entorno Docker
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full write-up of the decisions behind this
+code and, for anyone coming from Symfony, an explicit mapping between the two ecosystems.
 
-Este proyecto incluye un entorno Docker completo: PHP-FPM 8.4, Nginx, MySQL 8.4, Redis y un contenedor Node para Vite.
+## What it does
 
-**Levantar el proyecto:**
+- Email/password registration and login, issuing a [Sanctum](https://laravel.com/docs/sanctum) API
+  token (`POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`).
+- CRUD-ish task management scoped to the authenticated user (`GET /api/tasks`, `GET /api/tasks/{id}`,
+  `POST /api/tasks`, `PUT /api/tasks/{id}`), with filtering (completion state, date range, category) and
+  sorting.
+- Tasks can be tagged with free-form categories, created on the fly per user.
+- A simple `admin` / `user` role split — admins see every user's tasks, regular users only see their own.
+- Self-documenting API via OpenAPI attributes, rendered with Swagger UI.
+
+## Quick start (Docker)
+
+The project ships with a full local environment: PHP-FPM 8.4, Nginx, MySQL 8.4, Redis, and a Node
+container for Vite.
 
 ```bash
-cp .env.example .env   # si no existe ya
+cp .env.example .env   # if it doesn't exist yet
 docker compose up -d
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate
 ```
 
-La app queda disponible en `http://localhost:8000`.
+The app is then available at `http://localhost:8000`, and the API docs at `http://localhost:8000/api/docs`.
 
-**Servicios:**
+**Services:**
 
-| Servicio | Contenedor      | Puerto host                  |
-|----------|------------------|-------------------------------|
-| App      | laravel-app      | — (php-fpm, vía nginx)        |
-| Nginx    | laravel-nginx    | 8000                           |
-| MySQL    | laravel-mysql    | 3306                            |
-| Redis    | laravel-redis    | 6379                            |
-| Node     | laravel-node     | 5173 (Vite dev server)         |
+| Service | Container      | Host port                    |
+|---------|----------------|-------------------------------|
+| App     | laravel-app    | — (php-fpm, behind nginx)      |
+| Nginx   | laravel-nginx  | 8000                            |
+| MySQL   | laravel-mysql  | 3306                            |
+| Redis   | laravel-redis  | 6379                            |
+| Node    | laravel-node   | 5173 (Vite dev server)          |
 
-**Comandos útiles:**
+**Useful commands:**
 
 ```bash
 docker compose exec app php artisan ...   # artisan
 docker compose exec app composer ...      # composer
-docker compose up -d node                 # levantar Vite dev server
-docker compose down                       # detener todo
-docker compose down -v                    # detener y borrar volúmenes (datos de MySQL/Redis)
+docker compose up -d node                 # start the Vite dev server
+docker compose down                       # stop everything
+docker compose down -v                    # stop and drop volumes (MySQL/Redis data)
 ```
 
-También hay un `Makefile` con los atajos más comunes (`make help` para verlos todos):
+A `Makefile` wraps the most common ones (`make help` to list them all):
 
 ```bash
-make up                          # levantar contenedores
+make up                          # start containers
 make artisan cmd="migrate"       # artisan migrate
-make shell                       # shell dentro del contenedor app
-make down                        # detener
+make shell                       # shell inside the app container
+make test                        # run the test suite
+make down                        # stop
 ```
 
-## About Laravel
+## Trying the API
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+A ready-to-import Postman collection lives in [`postman/`](postman): import both
+`TaskManagerAPI.postman_collection.json` and `TaskManagerAPI.postman_environment.json`, select the
+environment, then run **Auth → Register** (or **Login**) first — its test script stores the Sanctum
+token automatically, so every other request authenticates itself. **Tasks → Create Task** likewise
+stores the created task's id for **Get Task by Id** / **Update Task**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Quality tooling
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer test     # PHPUnit (Unit + Feature)
+composer stan      # PHPStan / Larastan, level 9
+composer deptrac    # verifies layer boundaries (Domain/Application/Infrastructure)
+composer cs         # PHP CS Fixer, dry-run
+composer cs-fix      # PHP CS Fixer, applies fixes
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+All four run in CI-equivalent form and are meant to be green at all times; `deptrac` in particular
+fails the build if a commit introduces a dependency that breaks the architecture (e.g. a `Domain` class
+reaching into Eloquent).
 
-## Contributing
+## Project layout
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+The codebase is organized by **bounded context** (`Task`, `User`), not by technical type. Each module is
+internally layered Domain → Application → Infrastructure:
 
-## Code of Conduct
+```
+app/
+├── Task/
+│   ├── Domain/            # entities, value objects, repository interfaces — no framework code
+│   ├── Application/       # use cases + request/response DTOs
+│   └── Infrastructure/    # Eloquent models, repositories, HTTP controllers, routes, migrations
+└── User/
+    ├── Domain/
+    ├── Application/
+    └── Infrastructure/
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Full rationale, trade-offs, and a Symfony-to-Laravel concept map live in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## Security Vulnerabilities
+## Built with
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Laravel 13, PHP 8.3+, MySQL, Sanctum, darkaonline/l5-swagger (OpenAPI), PHPStan/Larastan, Deptrac, PHP CS
+Fixer, PHPUnit.
