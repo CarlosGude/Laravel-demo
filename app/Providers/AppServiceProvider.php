@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -10,10 +11,19 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        Factory::guessFactoryNamesUsing(function (string $modelName): string {
-            $basename = Str::beforeLast(class_basename($modelName), 'Model');
+        Factory::guessFactoryNamesUsing(
+            /**
+             * @param class-string<Model> $modelName
+             * @return class-string<Factory>
+             */
+            static function (string $modelName): string {
+                $basename = Str::beforeLast(class_basename($modelName), 'Model');
 
-            return 'Database\\Factories\\'.$basename.'Factory';
-        });
+                /** @var class-string<Factory<Model>> $factoryName */
+                $factoryName = 'Database\\Factories\\'.$basename.'Factory';
+
+                return $factoryName;
+            }
+        );
     }
 }
