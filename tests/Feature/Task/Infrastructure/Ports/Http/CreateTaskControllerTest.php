@@ -42,4 +42,30 @@ class CreateTaskControllerTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    public function test_it_rejects_an_empty_title(): void
+    {
+        $this->actingAsUser();
+
+        $response = $this->postJson('/api/tasks', [
+            'title' => '',
+            'description' => self::TASK_DESCRIPTION,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['title']);
+    }
+
+    public function test_it_rejects_a_title_longer_than_255_characters(): void
+    {
+        $this->actingAsUser();
+
+        $response = $this->postJson('/api/tasks', [
+            'title' => str_repeat('a', 256),
+            'description' => self::TASK_DESCRIPTION,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['title']);
+    }
 }

@@ -107,5 +107,5 @@ Full rationale, trade-offs, and a Symfony-to-Laravel concept map live in
 
 ## Built with
 
-Laravel 13, PHP 8.3+, MySQL, Sanctum, darkaonline/l5-swagger (OpenAPI), PHPStan/Larastan, Deptrac, PHP CS
+Laravel 13, PHP 8.4+, MySQL, Sanctum, darkaonline/l5-swagger (OpenAPI), PHPStan/Larastan, Deptrac, PHP CS
 Fixer, PHPUnit.

@@ -101,4 +101,49 @@ class UpdateTaskControllerTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseHas('tasks', ['id' => $othersTask->id, 'completed' => true]);
     }
+
+    public function test_it_rejects_an_empty_title(): void
+    {
+        $user = $this->actingAsUser();
+        $task = TaskModel::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->putJson("/api/tasks/{$task->uuid}", [
+            'title' => '',
+            'description' => self::TASK_DESCRIPTION,
+            'completed' => false,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['title']);
+    }
+
+    public function test_it_rejects_a_title_longer_than_255_characters(): void
+    {
+        $user = $this->actingAsUser();
+        $task = TaskModel::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->putJson("/api/tasks/{$task->uuid}", [
+            'title' => str_repeat('a', 256),
+            'description' => self::TASK_DESCRIPTION,
+            'completed' => false,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['title']);
+    }
+
+    public function test_it_rejects_an_update_that_omits_completed(): void
+    {
+        $user = $this->actingAsUser();
+        $task = TaskModel::factory()->create(['user_id' => $user->id, 'completed' => true]);
+
+        $response = $this->putJson("/api/tasks/{$task->uuid}", [
+            'title' => self::UPDATED_TASK_TITLE,
+            'description' => self::TASK_DESCRIPTION,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['completed']);
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'completed' => true]);
+    }
 }

@@ -127,7 +127,9 @@ $this->app->bind(TaskRepositoryInterface::class, MySqlTaskRepository::class);
 
 **Why:** use cases depend on the interface, never on `MySqlTaskRepository` or Eloquent directly — this
 is the Dependency Inversion Principle applied at the module boundary. It's also why Application-layer
-use cases can be unit-tested with a hand-written in-memory fake instead of a database.
+use cases can be unit-tested with a Mockery mock of the interface instead of a database — no in-memory
+fake implementation is maintained, since a mock expressed as "expect this call, return this value" is
+less code to keep in sync than a second, hand-written implementation of the same interface.
 
 The same pattern is used for the password hasher — `PasswordHasherInterface` in Domain,
 `LaravelPasswordHasher` (wrapping `Hash::make`/`Hash::check`) in Infrastructure — so the hashing
@@ -154,8 +156,16 @@ require_once __DIR__.'/../app/User/Infrastructure/Routes/api.php';
 require_once __DIR__.'/../app/Task/Infrastructure/Routes/api.php';
 ```
 
-**Why:** a module is self-contained — deleting `app/Task` removes its routes and migrations with it,
-instead of leaving orphaned entries in a central `routes/api.php` or `database/migrations/`. The
+**Why:** a module owns its own routes and migrations — deleting `app/Task` removes its routes and
+migrations with it, instead of leaving orphaned entries in a central `routes/api.php` or
+`database/migrations/`. This is one-directional, not full isolation: `Task` depends on `User`
+(`RequestingUserFactory` reads `App\User\Domain\Entity\UserRole` and `App\User\Infrastructure\Models\UserModel`
+to turn the authenticated request into a `RequestingUser`), because task ownership and admin checks are
+meaningless without knowing who the user is. `User` has no dependency back on `Task`. Deleting `Task`
+is safe; deleting `User` is not — that asymmetry matches the actual domain relationship (tasks belong
+to users; users don't belong to tasks) and isn't itself a problem, but it does mean "modules are
+extractable" should be read as "each module's routes/migrations/bindings are self-registering," not as
+"every module is fully independent of every other." The
 `migrations:modules` console command (`app/Console/Commands/ListModuleMigrationsCommand.php`) exists
 specifically to give a single cross-module view back, since migrations are no longer in one folder.
 
@@ -224,7 +234,7 @@ models themselves free of anything that only exists for the benefit of tests.
 
 ```
 tests/Unit/<Module>/Domain/...          — entities, value objects: no framework, no DB
-tests/Unit/<Module>/Application/...     — use cases: in-memory/fake repositories, no DB
+tests/Unit/<Module>/Application/...     — use cases: Mockery mocks of repository interfaces, no DB
 tests/Feature/<Module>/Infrastructure/... — controllers + repositories: real DB, real HTTP kernel
 ```
 
@@ -273,6 +283,21 @@ aggregate root is supposed to behave.
 
 **Symfony equivalent:** the same reasoning as the `symfony/uid` component's `UuidV4`/`UuidV7` as the
 exposed identifier, while Doctrine still uses an auto-increment or sequence-backed id internally.
+
+## Known limitations
+
+These aren't architectural decisions, they're gaps — listed here instead of left for a reader to find:
+
+- **No `DELETE /api/tasks/{id}`.** Only create/list/update exist; a task can be marked completed but
+  never removed.
+- **No pagination.** `GET /api/tasks` returns every matching task in one response; on a large dataset
+  this would need a `page`/`per_page` (or cursor) parameter threaded through `TaskFilter` and the
+  repository's `findAll()`.
+- **Sanctum tokens don't expire** (`config/sanctum.php`'s `expiration` is `null`). There's no refresh
+  flow and no revocation beyond `LogoutUserController` deleting the current token — acceptable for a
+  demo, not for anything that outlives a demo.
+- **`Task` depends on `User`** for authorization (see §6) — the two modules are not symmetrically
+  independent.
 
 ## What this demo deliberately does *not* have
 

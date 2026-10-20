@@ -22,12 +22,20 @@ final readonly class UpdateTaskPortModel
 
     public static function fromHttpRequest(Request $request, string $id): self
     {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:255'],
+            'completed' => ['required', 'boolean'],
+            'category_names' => ['sometimes', 'array'],
+            'category_names.*' => ['string', 'max:255'],
+        ]);
+
         return new self(
             id: $id,
-            title: $request->string('title')->toString(),
-            description: $request->string('description')->toString(),
-            completed: $request->boolean('completed'),
-            categoryNames: $request->array('category_names'),
+            title: $validated['title'],
+            description: $validated['description'],
+            completed: $validated['completed'],
+            categoryNames: $validated['category_names'] ?? [],
         );
     }
 

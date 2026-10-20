@@ -20,10 +20,17 @@ final readonly class CreateTaskPortModel
 
     public static function fromHttpRequest(Request $request): self
     {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:255'],
+            'category_names' => ['sometimes', 'array'],
+            'category_names.*' => ['string', 'max:255'],
+        ]);
+
         return new self(
-            title: $request->string('title')->toString(),
-            description: $request->string('description')->toString(),
-            categoryNames: $request->array('category_names'),
+            title: $validated['title'],
+            description: $validated['description'],
+            categoryNames: $validated['category_names'] ?? [],
         );
     }
 
