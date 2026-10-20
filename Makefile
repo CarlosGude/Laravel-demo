@@ -1,60 +1,63 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help up down restart build ps logs shell artisan composer migrate migrate-fresh seed fresh key test tinker npm node-up
+.PHONY: help up down restart build ps logs shell artisan composer migrate migrate-fresh seed fresh key make-test test tinker npm node-up
 
-help: ## Muestra esta ayuda
+help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*## ' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-up: ## Levanta los contenedores (app, nginx, mysql, redis)
+up: ## Start the containers (app, nginx, mysql, redis)
 	docker compose up -d app nginx mysql redis
 
-down: ## Detiene los contenedores
+down: ## Stop the containers
 	docker compose down
 
-restart: ## Reinicia los contenedores
+restart: ## Restart the containers
 	docker compose restart
 
-build: ## Reconstruye las imágenes
+build: ## Rebuild the images
 	docker compose build
 
-ps: ## Muestra el estado de los contenedores
+ps: ## Show container status
 	docker compose ps
 
-logs: ## Sigue los logs de todos los servicios
+logs: ## Follow logs from all services
 	docker compose logs -f
 
-shell: ## Abre un shell dentro del contenedor app
+shell: ## Open a shell inside the app container
 	docker compose exec app sh
 
-artisan: ## Ejecuta artisan, usar: make artisan cmd="route:list"
+artisan: ## Run artisan, usage: make artisan cmd="route:list"
 	docker compose exec app php artisan $(cmd)
 
-composer: ## Ejecuta composer, usar: make composer cmd="require foo/bar"
+composer: ## Run composer, usage: make composer cmd="require foo/bar"
 	docker compose exec app composer $(cmd)
 
-migrate: ## Corre las migraciones
+migrate: ## Run migrations
 	docker compose exec app php artisan migrate
 
-migrate-fresh: ## Recrea la base de datos desde cero
+migrate-fresh: ## Recreate the database from scratch
 	docker compose exec app php artisan migrate:fresh
 
-seed: ## Corre los seeders
+seed: ## Run the seeders
 	docker compose exec app php artisan db:seed
 
 fresh: ## migrate:fresh + seed
 	docker compose exec app php artisan migrate:fresh --seed
 
-key: ## Genera la APP_KEY
+key: ## Generate the APP_KEY
 	docker compose exec app php artisan key:generate
 
-test: ## Corre los tests
+make-test: ## Create a test file, usage: make make-test cmd="ExampleTest"
+	docker compose exec app php artisan make:test $(cmd)
+
+test: ## Run the tests
 	docker compose exec app php artisan test
 
-tinker: ## Abre tinker
+tinker: ## Open tinker
 	docker compose exec app php artisan tinker
 
-node-up: ## Levanta el servidor de Vite
+node-up: ## Start the Vite dev server
 	docker compose up -d node
 
-npm: ## Ejecuta npm dentro del contenedor node, usar: make npm cmd="run build"
+npm: ## Run npm inside the node container, usage: make npm cmd="run build"
 	docker compose run --rm node npm $(cmd)
