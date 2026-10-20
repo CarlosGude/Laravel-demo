@@ -12,6 +12,7 @@
         "laravel/tinker": "^3.0"
     },
     "require-dev": {
+        "deptrac/deptrac": "^4.7",
         "fakerphp/faker": "^1.23",
         "friendsofphp/php-cs-fixer": "^3.95",
         "larastan/larastan": "^3.13",
@@ -54,6 +55,7 @@
         "cs": "php-cs-fixer fix --diff --dry-run",
         "cs-fix": "php-cs-fixer fix",
         "stan": "phpstan analyse --memory-limit=1G",
+        "deptrac": "deptrac analyse --report-uncovered",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

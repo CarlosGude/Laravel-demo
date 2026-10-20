@@ -21,7 +21,7 @@ final readonly class ListAllTaskUseCase
     {
         $tasks = $this->taskRepository->findAll();
 
-        return $tasks->map(
+        return array_map(
             fn (Task $task): TaskResponse => new TaskResponse(
                 id: $task->getPersistedId(),
                 title: $task->getName(),
@@ -29,7 +29,8 @@ final readonly class ListAllTaskUseCase
                 completed: $task->isCompleted(),
                 createdAt: $task->getCreatedAt(),
                 updatedAt: $task->getUpdatedAt()
-            )
-        )->all();
+            ),
+            $tasks->toArray()
+        );
     }
 }

@@ -3,14 +3,11 @@
 namespace App\Task\Domain\Repository;
 
 use App\Task\Domain\Entity\Task;
-use Illuminate\Support\Collection;
+use App\Task\Domain\Entity\TaskCollection;
 
 interface TaskRepositoryInterface
 {
-    /**
-     * @return Collection<int, Task>
-     */
-    public function findAll(): Collection;
+    public function findAll(): TaskCollection;
 
     public function findById(int $id): ?Task;
 

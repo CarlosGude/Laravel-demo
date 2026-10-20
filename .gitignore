@@ -6,6 +6,7 @@
 .phpactor.json
 .php-cs-fixer.cache
 .phpunit.result.cache
+.deptrac.cache
 /.codex
 /.cursor/
 /.idea

@@ -3,10 +3,10 @@
 namespace App\Task\Infrastructure\Repository;
 
 use App\Task\Domain\Entity\Task;
+use App\Task\Domain\Entity\TaskCollection;
 use App\Task\Domain\Exceptions\TaskNotFoundException;
 use App\Task\Domain\Repository\TaskRepositoryInterface;
 use App\Task\Infrastructure\Models\TaskModel;
-use Illuminate\Support\Collection;
 
 final class MySqlTaskRepository implements TaskRepositoryInterface
 {
@@ -15,12 +15,11 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
         return TaskModel::query()->find($id)?->toEntity();
     }
 
-    /**
-     * @return Collection<int, Task>
-     */
-    public function findAll(): Collection
+    public function findAll(): TaskCollection
     {
-        return TaskModel::query()->get()->map(fn (TaskModel $model): Task => $model->toEntity());
+        return TaskCollection::fromArray(
+            TaskModel::query()->get()->map(fn (TaskModel $model): Task => $model->toEntity())->all()
+        );
     }
 
     public function create(Task $task): Task
