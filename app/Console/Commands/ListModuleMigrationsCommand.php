@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ListModuleMigrationsCommand extends Command
@@ -13,14 +14,14 @@ class ListModuleMigrationsCommand extends Command
 
     public function handle(): int
     {
-        $migrations = collect(glob(base_path('app/*/Infrastructure/Database/Migrations/*.php')))
-            ->map(fn (string $path) => [
+        $migrations = collect(glob(base_path('app/*/Infrastructure/Database/Migrations/*.php')) ?: [])
+            ->map(fn (string $path): array => [
                 'module' => basename(dirname($path, 4)),
                 'migration' => basename($path, '.php'),
             ])
             ->merge(
-                collect(glob(base_path('database/migrations/*.php')))
-                    ->map(fn (string $path) => [
+                collect(glob(base_path('database/migrations/*.php')) ?: [])
+                    ->map(fn (string $path): array => [
                         'module' => 'root',
                         'migration' => basename($path, '.php'),
                     ])
@@ -48,10 +49,22 @@ class ListModuleMigrationsCommand extends Command
         return self::SUCCESS;
     }
 
-    private function ranMigrations(): ?\Illuminate\Support\Collection
+    /**
+     * @return ?Collection<int, string>
+     */
+    private function ranMigrations(): ?Collection
     {
         try {
-            return DB::table('migrations')->pluck('migration');
+            return DB::table('migrations')
+                ->pluck('migration')
+                ->map(static function (mixed $migration): string {
+                    if (!is_string($migration)) {
+                        throw new \UnexpectedValueException('The migrations.migration column must be a string.');
+                    }
+
+                    return $migration;
+                })
+                ->values();
         } catch (\Throwable) {
             return null;
         }

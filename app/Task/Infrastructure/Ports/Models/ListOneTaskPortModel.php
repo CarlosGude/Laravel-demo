@@ -8,8 +8,7 @@ final readonly class ListOneTaskPortModel
 {
     private function __construct(
         public int $id,
-    )
-    {
+    ) {
     }
 
     public static function fromHttpRequest(int $id): self
@@ -17,6 +16,9 @@ final readonly class ListOneTaskPortModel
         return new self(id: $id);
     }
 
+    /**
+     * @return ?array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string}
+     */
     public static function toHttpResponse(?TaskResponse $task): ?array
     {
         if ($task === null) {

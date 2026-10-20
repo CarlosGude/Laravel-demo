@@ -2,24 +2,23 @@
 
 namespace App\Task\Infrastructure\Ports\Models;
 
-use Illuminate\Http\Request;
-use App\Task\Application\Dto\Response\TaskResponse;
 use App\Task\Application\Dto\Request\TaskRequest;
+use App\Task\Application\Dto\Response\TaskResponse;
+use Illuminate\Http\Request;
 
 final readonly class CreateTaskPortModel
 {
     private function __construct(
         public string $title,
         public string $description,
-    )
-    {
+    ) {
     }
 
     public static function fromHttpRequest(Request $request): self
     {
         return new self(
-            title: (string) $request->input('title'),
-            description: (string) $request->input('description'),
+            title: $request->string('title')->toString(),
+            description: $request->string('description')->toString(),
         );
     }
 
@@ -33,6 +32,9 @@ final readonly class CreateTaskPortModel
         );
     }
 
+    /**
+     * @return array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string}
+     */
     public static function toHttpResponse(TaskResponse $task): array
     {
         return [

@@ -8,11 +8,12 @@ final readonly class ListAllTaskPortModel
 {
     /**
      * @param TaskResponse[] $tasks
+     * @return array<int, array{id: int, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string}>
      */
     public static function toHttpResponse(array $tasks): array
     {
         return array_map(
-            static fn (TaskResponse $task) => [
+            static fn (TaskResponse $task): array => [
                 'id' => $task->id,
                 'title' => $task->title,
                 'description' => $task->description,

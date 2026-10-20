@@ -11,8 +11,7 @@ final readonly class TaskResponse
         public bool $completed,
         public ?\DateTimeImmutable $createdAt,
         public ?\DateTimeImmutable $updatedAt,
-    )
-    {
+    ) {
 
     }
 }

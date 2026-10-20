@@ -2,15 +2,14 @@
 
 namespace App\Task\Application\UseCase;
 
-use App\Task\Domain\Repository\TaskRepositoryInterface;
 use App\Task\Application\Dto\Response\TaskResponse;
+use App\Task\Domain\Repository\TaskRepositoryInterface;
 
 final readonly class ListOneTaskUseCase
 {
     public function __construct(
         private TaskRepositoryInterface $taskRepository
-    )
-    {
+    ) {
 
     }
 
@@ -23,7 +22,7 @@ final readonly class ListOneTaskUseCase
         }
 
         return new TaskResponse(
-            id: $task->getId(),
+            id: $task->getPersistedId(),
             title: $task->getName(),
             description: $task->getDescription(),
             completed: $task->isCompleted(),

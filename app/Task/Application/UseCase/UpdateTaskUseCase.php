@@ -1,23 +1,21 @@
 <?php
 
 namespace App\Task\Application\UseCase;
-use App\Task\Application\Exceptions\TaskWithIdCantBeCreated;
+
+use App\Task\Application\Dto\Request\TaskRequest;
+use App\Task\Application\Dto\Response\TaskResponse;
 use App\Task\Domain\Exceptions\TaskNotFoundException;
 use App\Task\Domain\Repository\TaskRepositoryInterface;
-use App\Task\Application\Dto\Response\TaskResponse;
-use App\Task\Application\Dto\Request\TaskRequest;
 
 final readonly class UpdateTaskUseCase
 {
-
     public function __construct(
         private TaskRepositoryInterface $taskRepository
-    )
-    {
+    ) {
 
     }
 
-    public function execute(TaskRequest $taskRequest):TaskResponse
+    public function execute(TaskRequest $taskRequest): TaskResponse
     {
         if (!$taskRequest->id) {
             throw new \RuntimeException('Task id is required');
@@ -38,7 +36,7 @@ final readonly class UpdateTaskUseCase
         $task = $this->taskRepository->update($taskToUpdate);
 
         return new TaskResponse(
-            id: $task->getId(),
+            id: $task->getPersistedId(),
             title: $task->getName(),
             description: $task->getDescription(),
             completed: $task->isCompleted(),

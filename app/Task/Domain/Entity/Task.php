@@ -11,8 +11,7 @@ final readonly class Task
         private bool $completed,
         private \DateTimeImmutable $createdAt,
         private \DateTimeImmutable $updatedAt,
-    )
-    {
+    ) {
 
     }
 
@@ -23,8 +22,7 @@ final readonly class Task
         bool $completed,
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt,
-    ): self
-    {
+    ): self {
         return new self(
             id: $id,
             name: $name,
@@ -71,12 +69,18 @@ final readonly class Task
             description: $description,
             completed: $completed,
             createdAt: $this->createdAt,
-            updatedAt: $updatedAt);
+            updatedAt: $updatedAt
+        );
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getPersistedId(): int
+    {
+        return $this->id ?? throw new \LogicException('Task has not been persisted yet.');
     }
 
     public function getName(): string
@@ -104,6 +108,9 @@ final readonly class Task
         return $this->updatedAt;
     }
 
+    /**
+     * @return array{id: ?int, name: string, description: string, completed: bool, createdAt: string, updatedAt: string}
+     */
     public function toArray(): array
     {
         return [

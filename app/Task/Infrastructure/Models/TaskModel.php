@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  */
 class TaskModel extends Model
 {
+    /** @use HasFactory<TaskFactory> */
     use HasFactory;
 
     protected $table = 'tasks';

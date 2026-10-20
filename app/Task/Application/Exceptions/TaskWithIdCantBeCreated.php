@@ -6,6 +6,6 @@ class TaskWithIdCantBeCreated extends \Exception
 {
     public function __construct()
     {
-        return parent::__construct('Task with an id is not allowed');
+        parent::__construct('Task with an id is not allowed');
     }
 }

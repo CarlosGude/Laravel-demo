@@ -10,15 +10,17 @@ use Illuminate\Support\Collection;
 
 final class MySqlTaskRepository implements TaskRepositoryInterface
 {
-
     public function findById(int $id): ?Task
     {
         return TaskModel::query()->find($id)?->toEntity();
     }
 
+    /**
+     * @return Collection<int, Task>
+     */
     public function findAll(): Collection
     {
-        return TaskModel::query()->get()->map(fn(TaskModel $model) => $model->toEntity());
+        return TaskModel::query()->get()->map(fn (TaskModel $model): Task => $model->toEntity());
     }
 
     public function create(Task $task): Task
@@ -34,7 +36,7 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
         $model = TaskModel::query()->find($task->getId());
 
         if (!$model) {
-            throw TaskNotFoundException::withId($task->getId());
+            throw TaskNotFoundException::withId($task->getPersistedId());
         }
 
         $model->fillFromEntity($task)->save();
