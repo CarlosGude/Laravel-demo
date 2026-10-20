@@ -65,7 +65,7 @@ make down                        # stop
 
 ## Trying the API
 
-A ready-to-import Postman collection lives in [`postman/`](postman): import both
+A ready-to-import Postman collection lives in [`postman/`](https://github.com/CarlosGude/Laravel-demo/tree/main/postman): import both
 `TaskManagerAPI.postman_collection.json` and `TaskManagerAPI.postman_environment.json`, select the
 environment, then run **Auth → Register** (or **Login**) first — its test script stores the Sanctum
 token automatically, so every other request authenticates itself. **Tasks → Create Task** likewise
