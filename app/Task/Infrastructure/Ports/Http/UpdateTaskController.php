@@ -11,8 +11,7 @@ final readonly class UpdateTaskController
 {
     public function __construct(
         private UpdateTaskUseCase $useCase,
-    )
-    {
+    ) {
     }
 
     public function __invoke(Request $request, int $id): JsonResponse

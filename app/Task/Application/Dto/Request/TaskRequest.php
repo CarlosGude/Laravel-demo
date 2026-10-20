@@ -9,8 +9,7 @@ final readonly class TaskRequest
         public string $title,
         public string $description,
         public bool $completed
-    )
-    {
+    ) {
 
     }
 }

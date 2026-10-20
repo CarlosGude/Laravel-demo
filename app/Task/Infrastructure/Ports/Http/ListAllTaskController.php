@@ -10,8 +10,7 @@ final readonly class ListAllTaskController
 {
     public function __construct(
         private ListAllTaskUseCase $useCase,
-    )
-    {
+    ) {
     }
 
     public function __invoke(): JsonResponse
