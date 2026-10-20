@@ -7,18 +7,33 @@ use Database\Factories\TaskFactory;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $description
+ * @property bool $completed
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class TaskModel extends Model
 {
     use HasFactory;
 
     protected $table = 'tasks';
 
-    protected $fillable = ['name', 'description', 'completed', 'created_at', 'updated_at'];
+    protected $fillable = [
+        TaskColumn::Name->value,
+        TaskColumn::Description->value,
+        TaskColumn::Completed->value,
+        TaskColumn::CreatedAt->value,
+        TaskColumn::UpdatedAt->value,
+    ];
 
     protected function casts(): array
     {
-        return ['completed' => 'boolean'];
+        return [TaskColumn::Completed->value => 'boolean'];
     }
 
     protected static function newFactory(): TaskFactory
@@ -29,11 +44,11 @@ class TaskModel extends Model
     public function fillFromEntity(Task $task): static
     {
         return $this->fill([
-            'name' => $task->getName(),
-            'description' => $task->getDescription(),
-            'completed' => $task->isCompleted(),
-            'created_at' => $task->getCreatedAt(),
-            'updated_at' => $task->getUpdatedAt(),
+            TaskColumn::Name->value => $task->getName(),
+            TaskColumn::Description->value => $task->getDescription(),
+            TaskColumn::Completed->value => $task->isCompleted(),
+            TaskColumn::CreatedAt->value => $task->getCreatedAt(),
+            TaskColumn::UpdatedAt->value => $task->getUpdatedAt(),
         ]);
     }
 

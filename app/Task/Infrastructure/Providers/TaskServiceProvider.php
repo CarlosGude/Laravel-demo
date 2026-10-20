@@ -12,4 +12,9 @@ class TaskServiceProvider extends ServiceProvider
     {
         $this->app->bind(TaskRepositoryInterface::class, MySqlTaskRepository::class);
     }
+
+    public function boot(): void
+    {
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
+    }
 }
