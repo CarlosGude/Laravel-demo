@@ -2,6 +2,7 @@
 
 namespace App\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\Dto\Response\TaskResponse;
 use App\Task\Domain\Repository\TaskRepositoryInterface;
 
@@ -13,11 +14,15 @@ final readonly class ListOneTaskUseCase
 
     }
 
-    public function execute(int $id): ?TaskResponse
+    public function execute(int $id, RequestingUser $requestingUser): ?TaskResponse
     {
         $task = $this->taskRepository->findById($id);
 
         if (!$task) {
+            return null;
+        }
+
+        if (!$requestingUser->isAdmin && !$task->isOwnedBy($requestingUser->id)) {
             return null;
         }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\Dto\Request\TaskRequest;
 use App\Task\Application\Exceptions\TaskWithIdCantBeCreated;
 use App\Task\Application\UseCase\CreateTaskUseCase;
@@ -19,14 +20,15 @@ class CreateTaskUseCaseTest extends TestCase
 
     public function test_execute_creates_a_new_task_and_returns_a_response(): void
     {
-        $work = Category::createNew('Work')->createWithId(1);
-        $persistedTask = Task::createNew('Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work))
+        $work = Category::createNew(1, 'Work')->createWithId(1);
+        $persistedTask = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work))
             ->createWithId(1);
 
         $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
         $taskRepository->expects('create')
             ->with(\Mockery::on(function (Task $task) {
                 return $task->getId() === null
+                    && $task->getUserId() === 1
                     && $task->getName() === 'Buy milk'
                     && $task->getDescription() === 'Whole milk, 2 liters'
                     && $task->isCompleted() === false
@@ -36,18 +38,21 @@ class CreateTaskUseCaseTest extends TestCase
 
         $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
         $categoryRepository->expects('findOrCreateByNames')
-            ->with(['Work'])
+            ->with(1, ['Work'])
             ->andReturn(new CategoryCollection($work));
 
         $useCase = new CreateTaskUseCase($taskRepository, $categoryRepository);
 
-        $response = $useCase->execute(new TaskRequest(
-            id: null,
-            title: 'Buy milk',
-            description: 'Whole milk, 2 liters',
-            completed: false,
-            categoryNames: ['Work'],
-        ));
+        $response = $useCase->execute(
+            new TaskRequest(
+                id: null,
+                title: 'Buy milk',
+                description: 'Whole milk, 2 liters',
+                completed: false,
+                categoryNames: ['Work'],
+            ),
+            new RequestingUser(id: 1, isAdmin: false),
+        );
 
         $this->assertSame(1, $response->id);
         $this->assertSame('Buy milk', $response->title);
@@ -68,11 +73,14 @@ class CreateTaskUseCaseTest extends TestCase
 
         $this->expectException(TaskWithIdCantBeCreated::class);
 
-        $useCase->execute(new TaskRequest(
-            id: 1,
-            title: 'Buy milk',
-            description: 'Whole milk, 2 liters',
-            completed: false,
-        ));
+        $useCase->execute(
+            new TaskRequest(
+                id: 1,
+                title: 'Buy milk',
+                description: 'Whole milk, 2 liters',
+                completed: false,
+            ),
+            new RequestingUser(id: 1, isAdmin: false),
+        );
     }
 }

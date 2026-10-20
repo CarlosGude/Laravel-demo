@@ -5,6 +5,7 @@ namespace App\Task\Infrastructure\Ports\Http;
 use App\Task\Application\UseCase\ListOneTaskUseCase;
 use App\Task\Infrastructure\Ports\Models\ListOneTaskPortModel;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 final readonly class ListOneTaskController
@@ -17,7 +18,10 @@ final readonly class ListOneTaskController
     #[OA\Get(
         path: '/api/tasks/{id}',
         summary: 'Get a single task by id',
+        description: 'Only the owner of the task, or an admin, can see it. Any other user receives a 404, '
+            .'the same as for a non-existent task, to avoid leaking its existence.',
         tags: ['Tasks'],
+        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'id',
@@ -33,14 +37,16 @@ final readonly class ListOneTaskController
                 description: 'Task found',
                 content: new OA\JsonContent(ref: '#/components/schemas/Task')
             ),
-            new OA\Response(response: 404, description: 'Task not found'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 404, description: 'Task not found, or not owned by the requester'),
         ]
     )]
-    public function __invoke(int $id): JsonResponse
+    public function __invoke(int $id, Request $request): JsonResponse
     {
         $portModel = ListOneTaskPortModel::fromHttpRequest($id);
+        $requestingUser = RequestingUserFactory::fromRequest($request);
 
-        $task = $this->useCase->execute($portModel->id);
+        $task = $this->useCase->execute($portModel->id, $requestingUser);
 
         $response = ListOneTaskPortModel::toHttpResponse($task);
 

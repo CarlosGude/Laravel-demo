@@ -11,6 +11,7 @@ use App\Task\Domain\Repository\TaskSortField;
 use App\Task\Infrastructure\Models\CategoryModel;
 use App\Task\Infrastructure\Models\TaskModel;
 use App\Task\Infrastructure\Repository\MySqlTaskRepository;
+use App\User\Infrastructure\Models\UserModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,7 +30,9 @@ class MySqlTaskRepositoryTest extends TestCase
 
     public function test_create_persists_the_task_and_returns_it_with_an_id(): void
     {
-        $task = $this->repository->create(Task::createNew('Buy milk', 'Whole milk, 2 liters'));
+        $user = UserModel::factory()->create();
+
+        $task = $this->repository->create(Task::createNew($user->id, 'Buy milk', 'Whole milk, 2 liters'));
 
         $this->assertNotNull($task->getId());
         $this->assertSame('Buy milk', $task->getName());
@@ -101,8 +104,11 @@ class MySqlTaskRepositoryTest extends TestCase
     {
         $this->expectException(TaskNotFoundException::class);
 
+        $user = UserModel::factory()->create();
+
         $this->repository->update(Task::create(
             id: 999,
+            userId: $user->id,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
             completed: false,
@@ -116,7 +122,12 @@ class MySqlTaskRepositoryTest extends TestCase
         $work = CategoryModel::factory()->create(['name' => 'Work']);
 
         $task = $this->repository->create(
-            Task::createNew('Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work->toEntity()))
+            Task::createNew(
+                $work->user_id,
+                'Buy milk',
+                'Whole milk, 2 liters',
+                new CategoryCollection($work->toEntity())
+            )
         );
 
         $this->assertSame(['Work'], $task->getCategories()->names());

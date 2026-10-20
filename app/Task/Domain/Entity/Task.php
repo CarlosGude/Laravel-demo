@@ -6,6 +6,7 @@ final readonly class Task
 {
     private function __construct(
         private ?int $id,
+        private int $userId,
         private string $name,
         private string $description,
         private bool $completed,
@@ -18,6 +19,7 @@ final readonly class Task
 
     public static function create(
         ?int $id,
+        int $userId,
         string $name,
         string $description,
         bool $completed,
@@ -27,6 +29,7 @@ final readonly class Task
     ): self {
         return new self(
             id: $id,
+            userId: $userId,
             name: $name,
             description: $description,
             completed: $completed,
@@ -36,10 +39,15 @@ final readonly class Task
         );
     }
 
-    public static function createNew(string $name, string $description, ?CategoryCollection $categories = null): self
-    {
+    public static function createNew(
+        int $userId,
+        string $name,
+        string $description,
+        ?CategoryCollection $categories = null,
+    ): self {
         return new self(
             id: null,
+            userId: $userId,
             name: $name,
             description: $description,
             completed: false,
@@ -53,6 +61,7 @@ final readonly class Task
     {
         return new self(
             id: $id,
+            userId: $this->userId,
             name: $this->getName(),
             description: $this->getDescription(),
             completed: $this->isCompleted(),
@@ -71,6 +80,7 @@ final readonly class Task
     ): self {
         return new self(
             id: $this->id,
+            userId: $this->userId,
             name: $name,
             description: $description,
             completed: $completed,
@@ -88,6 +98,16 @@ final readonly class Task
     public function getPersistedId(): int
     {
         return $this->id ?? throw new \LogicException('Task has not been persisted yet.');
+    }
+
+    public function getUserId(): int
+    {
+        return $this->userId;
+    }
+
+    public function isOwnedBy(int $userId): bool
+    {
+        return $this->userId === $userId;
     }
 
     public function getName(): string
@@ -121,12 +141,13 @@ final readonly class Task
     }
 
     /**
-     * @return array{id: ?int, name: string, description: string, completed: bool, createdAt: string, updatedAt: string, categories: array<int, string>}
+     * @return array{id: ?int, userId: int, name: string, description: string, completed: bool, createdAt: string, updatedAt: string, categories: array<int, string>}
      */
     public function toArray(): array
     {
         return [
             'id' => $this->getId(),
+            'userId' => $this->userId,
             'name' => $this->getName(),
             'description' => $this->getDescription(),
             'completed' => $this->isCompleted(),

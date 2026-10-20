@@ -11,9 +11,10 @@ class TaskTest extends TestCase
 {
     public function test_create_new_builds_a_task_without_id_and_not_completed(): void
     {
-        $task = Task::createNew('Buy milk', 'Whole milk, 2 liters');
+        $task = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters');
 
         $this->assertNull($task->getId());
+        $this->assertSame(1, $task->getUserId());
         $this->assertSame('Buy milk', $task->getName());
         $this->assertSame('Whole milk, 2 liters', $task->getDescription());
         $this->assertFalse($task->isCompleted());
@@ -25,11 +26,12 @@ class TaskTest extends TestCase
 
     public function test_create_with_id_keeps_the_rest_of_the_data_unchanged(): void
     {
-        $task = Task::createNew('Buy milk', 'Whole milk, 2 liters');
+        $task = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters');
 
         $taskWithId = $task->createWithId(5);
 
         $this->assertSame(5, $taskWithId->getId());
+        $this->assertSame($task->getUserId(), $taskWithId->getUserId());
         $this->assertSame($task->getName(), $taskWithId->getName());
         $this->assertSame($task->getDescription(), $taskWithId->getDescription());
         $this->assertSame($task->isCompleted(), $taskWithId->isCompleted());
@@ -42,6 +44,7 @@ class TaskTest extends TestCase
         $createdAt = new \DateTimeImmutable('2026-01-01T10:00:00+00:00');
         $task = Task::create(
             id: 10,
+            userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
             completed: false,
@@ -58,6 +61,7 @@ class TaskTest extends TestCase
         );
 
         $this->assertSame(10, $changedTask->getId());
+        $this->assertSame(1, $changedTask->getUserId());
         $this->assertSame('Buy milk and bread', $changedTask->getName());
         $this->assertSame('Whole milk and sourdough bread', $changedTask->getDescription());
         $this->assertTrue($changedTask->isCompleted());
@@ -71,6 +75,7 @@ class TaskTest extends TestCase
         $updatedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
         $task = Task::create(
             id: 10,
+            userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
             completed: true,
@@ -80,6 +85,7 @@ class TaskTest extends TestCase
 
         $this->assertSame([
             'id' => 10,
+            'userId' => 1,
             'name' => 'Buy milk',
             'description' => 'Whole milk, 2 liters',
             'completed' => true,
@@ -91,12 +97,12 @@ class TaskTest extends TestCase
 
     public function test_create_new_accepts_categories_and_with_changes_can_replace_them(): void
     {
-        $work = Category::createNew('Work')->createWithId(1);
-        $task = Task::createNew('Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work));
+        $work = Category::createNew(1, 'Work')->createWithId(1);
+        $task = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work));
 
         $this->assertSame(['Work'], $task->getCategories()->names());
 
-        $urgent = Category::createNew('Urgent')->createWithId(2);
+        $urgent = Category::createNew(1, 'Urgent')->createWithId(2);
         $recategorized = $task->withChanges(
             name: $task->getName(),
             description: $task->getDescription(),
@@ -110,8 +116,8 @@ class TaskTest extends TestCase
 
     public function test_with_changes_without_categories_keeps_the_existing_ones(): void
     {
-        $work = Category::createNew('Work')->createWithId(1);
-        $task = Task::createNew('Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work));
+        $work = Category::createNew(1, 'Work')->createWithId(1);
+        $task = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters', new CategoryCollection($work));
 
         $updated = $task->withChanges(
             name: 'Buy milk and bread',

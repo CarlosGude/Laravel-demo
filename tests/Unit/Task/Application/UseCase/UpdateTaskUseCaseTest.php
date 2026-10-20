@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\Dto\Request\TaskRequest;
 use App\Task\Application\UseCase\UpdateTaskUseCase;
 use App\Task\Domain\Entity\Category;
@@ -22,6 +23,7 @@ class UpdateTaskUseCaseTest extends TestCase
         $createdAt = new \DateTimeImmutable('2026-01-01T10:00:00+00:00');
         $existingTask = Task::create(
             id: 1,
+            userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
             completed: false,
@@ -29,7 +31,7 @@ class UpdateTaskUseCaseTest extends TestCase
             updatedAt: $createdAt,
         );
 
-        $urgent = Category::createNew('Urgent')->createWithId(2);
+        $urgent = Category::createNew(1, 'Urgent')->createWithId(2);
 
         $updatedTask = $existingTask->withChanges(
             name: 'Buy milk and bread',
@@ -54,18 +56,21 @@ class UpdateTaskUseCaseTest extends TestCase
 
         $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
         $categoryRepository->expects('findOrCreateByNames')
-            ->with(['Urgent'])
+            ->with(1, ['Urgent'])
             ->andReturn(new CategoryCollection($urgent));
 
         $useCase = new UpdateTaskUseCase($taskRepository, $categoryRepository);
 
-        $response = $useCase->execute(new TaskRequest(
-            id: 1,
-            title: 'Buy milk and bread',
-            description: 'Whole milk and sourdough bread',
-            completed: true,
-            categoryNames: ['Urgent'],
-        ));
+        $response = $useCase->execute(
+            new TaskRequest(
+                id: 1,
+                title: 'Buy milk and bread',
+                description: 'Whole milk and sourdough bread',
+                completed: true,
+                categoryNames: ['Urgent'],
+            ),
+            new RequestingUser(id: 1, isAdmin: false),
+        );
 
         $this->assertSame(1, $response->id);
         $this->assertSame('Buy milk and bread', $response->title);
@@ -86,12 +91,15 @@ class UpdateTaskUseCaseTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Task id is required');
 
-        $useCase->execute(new TaskRequest(
-            id: null,
-            title: 'Buy milk',
-            description: 'Whole milk, 2 liters',
-            completed: false,
-        ));
+        $useCase->execute(
+            new TaskRequest(
+                id: null,
+                title: 'Buy milk',
+                description: 'Whole milk, 2 liters',
+                completed: false,
+            ),
+            new RequestingUser(id: 1, isAdmin: false),
+        );
     }
 
     public function test_execute_throws_task_not_found_when_the_task_does_not_exist(): void
@@ -107,11 +115,48 @@ class UpdateTaskUseCaseTest extends TestCase
 
         $this->expectException(TaskNotFoundException::class);
 
-        $useCase->execute(new TaskRequest(
-            id: 99,
-            title: 'Buy milk',
+        $useCase->execute(
+            new TaskRequest(
+                id: 99,
+                title: 'Buy milk',
+                description: 'Whole milk, 2 liters',
+                completed: false,
+            ),
+            new RequestingUser(id: 1, isAdmin: false),
+        );
+    }
+
+    public function test_execute_throws_task_not_found_when_a_non_admin_does_not_own_the_task(): void
+    {
+        $existingTask = Task::create(
+            id: 1,
+            userId: 2,
+            name: 'Buy milk',
             description: 'Whole milk, 2 liters',
             completed: false,
-        ));
+            createdAt: new \DateTimeImmutable(),
+            updatedAt: new \DateTimeImmutable(),
+        );
+
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findById')->with(1)->andReturn($existingTask);
+        $taskRepository->expects('update')->never();
+
+        $categoryRepository = \Mockery::mock(CategoryRepositoryInterface::class);
+        $categoryRepository->expects('findOrCreateByNames')->never();
+
+        $useCase = new UpdateTaskUseCase($taskRepository, $categoryRepository);
+
+        $this->expectException(TaskNotFoundException::class);
+
+        $useCase->execute(
+            new TaskRequest(
+                id: 1,
+                title: 'Buy milk',
+                description: 'Whole milk, 2 liters',
+                completed: false,
+            ),
+            new RequestingUser(id: 1, isAdmin: false),
+        );
     }
 }

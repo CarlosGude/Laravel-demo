@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Task\Infrastructure\Models\CategoryModel;
+use App\User\Infrastructure\Models\UserModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,6 +21,7 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => UserModel::factory(),
             'name' => $this->faker->unique()->word(),
         ];
     }

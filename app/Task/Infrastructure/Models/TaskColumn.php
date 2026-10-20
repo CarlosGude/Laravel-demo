@@ -4,6 +4,7 @@ namespace App\Task\Infrastructure\Models;
 
 enum TaskColumn: string
 {
+    case UserId = 'user_id';
     case Name = 'name';
     case Description = 'description';
     case Completed = 'completed';

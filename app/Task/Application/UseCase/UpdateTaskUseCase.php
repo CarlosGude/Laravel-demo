@@ -2,6 +2,7 @@
 
 namespace App\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\Dto\Request\TaskRequest;
 use App\Task\Application\Dto\Response\TaskResponse;
 use App\Task\Domain\Exceptions\TaskNotFoundException;
@@ -17,7 +18,7 @@ final readonly class UpdateTaskUseCase
 
     }
 
-    public function execute(TaskRequest $taskRequest): TaskResponse
+    public function execute(TaskRequest $taskRequest, RequestingUser $requestingUser): TaskResponse
     {
         if (!$taskRequest->id) {
             throw new \RuntimeException('Task id is required');
@@ -28,7 +29,14 @@ final readonly class UpdateTaskUseCase
             throw TaskNotFoundException::withId($taskRequest->id);
         }
 
-        $categories = $this->categoryRepository->findOrCreateByNames($taskRequest->categoryNames);
+        if (!$requestingUser->isAdmin && !$existingTask->isOwnedBy($requestingUser->id)) {
+            throw TaskNotFoundException::withId($taskRequest->id);
+        }
+
+        $categories = $this->categoryRepository->findOrCreateByNames(
+            $existingTask->getUserId(),
+            $taskRequest->categoryNames
+        );
 
         $taskToUpdate = $existingTask->withChanges(
             name: $taskRequest->title,

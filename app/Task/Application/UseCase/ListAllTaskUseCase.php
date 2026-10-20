@@ -2,6 +2,7 @@
 
 namespace App\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\Dto\Request\TaskFilterRequest;
 use App\Task\Application\Dto\Response\TaskResponse;
 use App\Task\Domain\Entity\Task;
@@ -21,11 +22,12 @@ final readonly class ListAllTaskUseCase
     /**
      * @return array<int, TaskResponse>
      */
-    public function execute(?TaskFilterRequest $filterRequest = null): array
+    public function execute(RequestingUser $requestingUser, ?TaskFilterRequest $filterRequest = null): array
     {
         $filterRequest ??= new TaskFilterRequest();
 
         $filter = new TaskFilter(
+            ownerId: $requestingUser->isAdmin ? null : $requestingUser->id,
             completed: $filterRequest->completed,
             createdFrom: $filterRequest->createdFrom,
             createdTo: $filterRequest->createdTo,

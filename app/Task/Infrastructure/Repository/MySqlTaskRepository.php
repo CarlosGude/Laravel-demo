@@ -25,6 +25,10 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
 
         $query = TaskModel::query()->with('categories');
 
+        if ($filter->ownerId !== null) {
+            $query->where(TaskColumn::UserId->value, $filter->ownerId);
+        }
+
         if ($filter->completed !== null) {
             $query->where(TaskColumn::Completed->value, $filter->completed);
         }

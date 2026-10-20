@@ -18,8 +18,8 @@ class TaskCollectionTest extends TestCase
 
     public function test_from_array_builds_a_collection_from_a_list_of_tasks(): void
     {
-        $first = Task::createNew('Buy milk', 'Whole milk, 2 liters');
-        $second = Task::createNew('Buy bread', 'Sourdough');
+        $first = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters');
+        $second = Task::createNew(1, 'Buy bread', 'Sourdough');
 
         $collection = TaskCollection::fromArray([$first, $second]);
 
@@ -29,7 +29,7 @@ class TaskCollectionTest extends TestCase
 
     public function test_is_iterable(): void
     {
-        $task = Task::createNew('Buy milk', 'Whole milk, 2 liters');
+        $task = Task::createNew(1, 'Buy milk', 'Whole milk, 2 liters');
 
         $collection = new TaskCollection($task);
 

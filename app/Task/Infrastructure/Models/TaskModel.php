@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
+ * @property int $user_id
  * @property string $name
  * @property string $description
  * @property bool $completed
@@ -29,6 +30,7 @@ class TaskModel extends Model
     protected $table = 'tasks';
 
     protected $fillable = [
+        TaskColumn::UserId->value,
         TaskColumn::Name->value,
         TaskColumn::Description->value,
         TaskColumn::Completed->value,
@@ -52,6 +54,7 @@ class TaskModel extends Model
     public function fillFromEntity(Task $task): static
     {
         return $this->fill([
+            TaskColumn::UserId->value => $task->getUserId(),
             TaskColumn::Name->value => $task->getName(),
             TaskColumn::Description->value => $task->getDescription(),
             TaskColumn::Completed->value => $task->isCompleted(),
@@ -64,6 +67,7 @@ class TaskModel extends Model
     {
         return Task::create(
             id: $this->id,
+            userId: $this->user_id,
             name: $this->name,
             description: $this->description,
             completed: $this->completed,

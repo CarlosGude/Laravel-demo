@@ -18,9 +18,11 @@ final readonly class ListAllTaskController
     #[OA\Get(
         path: '/api/tasks',
         summary: 'List tasks, optionally filtered and sorted',
-        description: 'Returns all tasks. Supports filtering by completion status, a single date or a date range, '
-            .'and a category, plus sorting by creation or modification date in ascending or descending order.',
+        description: 'Returns the authenticated user\'s tasks (or every task, for admins). Supports filtering by '
+            .'completion status, a single date or a date range, and a category, plus sorting by creation or '
+            .'modification date in ascending or descending order.',
         tags: ['Tasks'],
+        security: [['bearerAuth' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'completed',
@@ -82,14 +84,16 @@ final readonly class ListAllTaskController
                     items: new OA\Items(ref: '#/components/schemas/Task')
                 )
             ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
             new OA\Response(response: 422, description: 'Invalid filter or sort parameters'),
         ]
     )]
     public function __invoke(Request $request): JsonResponse
     {
         $portModel = ListAllTaskPortModel::fromHttpRequest($request);
+        $requestingUser = RequestingUserFactory::fromRequest($request);
 
-        $tasks = $this->useCase->execute($portModel->toApplicationRequest());
+        $tasks = $this->useCase->execute($requestingUser, $portModel->toApplicationRequest());
 
         return response()->json(ListAllTaskPortModel::toHttpResponse($tasks));
     }

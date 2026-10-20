@@ -2,6 +2,7 @@
 
 namespace App\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\Dto\Request\TaskRequest;
 use App\Task\Application\Dto\Response\TaskResponse;
 use App\Task\Application\Exceptions\TaskWithIdCantBeCreated;
@@ -18,15 +19,19 @@ final readonly class CreateTaskUseCase
 
     }
 
-    public function execute(TaskRequest $taskRequest): TaskResponse
+    public function execute(TaskRequest $taskRequest, RequestingUser $requestingUser): TaskResponse
     {
         if ($taskRequest->id) {
             throw new TaskWithIdCantBeCreated();
         }
 
-        $categories = $this->categoryRepository->findOrCreateByNames($taskRequest->categoryNames);
+        $categories = $this->categoryRepository->findOrCreateByNames(
+            $requestingUser->id,
+            $taskRequest->categoryNames
+        );
 
         $newTask = Task::createNew(
+            userId: $requestingUser->id,
             name: $taskRequest->title,
             description: $taskRequest->description,
             categories: $categories,

@@ -9,5 +9,5 @@ interface CategoryRepositoryInterface
     /**
      * @param array<int, string> $names
      */
-    public function findOrCreateByNames(array $names): CategoryCollection;
+    public function findOrCreateByNames(int $userId, array $names): CategoryCollection;
 }

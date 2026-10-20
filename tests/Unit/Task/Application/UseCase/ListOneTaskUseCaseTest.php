@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\UseCase\ListOneTaskUseCase;
 use App\Task\Domain\Entity\Category;
 use App\Task\Domain\Entity\CategoryCollection;
@@ -16,12 +17,13 @@ class ListOneTaskUseCaseTest extends TestCase
 
     public function test_execute_returns_a_response_when_the_task_exists(): void
     {
-        $work = Category::create(1, 'Work');
+        $work = Category::create(1, 1, 'Work');
         $createdAt = new \DateTimeImmutable('2026-01-01T10:00:00+00:00');
         $updatedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
 
         $task = Task::create(
             id: 1,
+            userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
             completed: false,
@@ -35,7 +37,7 @@ class ListOneTaskUseCaseTest extends TestCase
 
         $useCase = new ListOneTaskUseCase($taskRepository);
 
-        $response = $useCase->execute(1);
+        $response = $useCase->execute(1, new RequestingUser(id: 1, isAdmin: false));
 
         $this->assertNotNull($response);
         $this->assertSame(1, $response->id);
@@ -50,6 +52,49 @@ class ListOneTaskUseCaseTest extends TestCase
 
         $useCase = new ListOneTaskUseCase($taskRepository);
 
-        $this->assertNull($useCase->execute(999));
+        $this->assertNull($useCase->execute(999, new RequestingUser(id: 1, isAdmin: false)));
+    }
+
+    public function test_execute_returns_null_when_a_non_admin_does_not_own_the_task(): void
+    {
+        $task = Task::create(
+            id: 1,
+            userId: 2,
+            name: 'Buy milk',
+            description: 'Whole milk, 2 liters',
+            completed: false,
+            createdAt: new \DateTimeImmutable(),
+            updatedAt: new \DateTimeImmutable(),
+        );
+
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findById')->with(1)->andReturn($task);
+
+        $useCase = new ListOneTaskUseCase($taskRepository);
+
+        $this->assertNull($useCase->execute(1, new RequestingUser(id: 1, isAdmin: false)));
+    }
+
+    public function test_execute_returns_a_response_when_an_admin_requests_someone_elses_task(): void
+    {
+        $task = Task::create(
+            id: 1,
+            userId: 2,
+            name: 'Buy milk',
+            description: 'Whole milk, 2 liters',
+            completed: false,
+            createdAt: new \DateTimeImmutable(),
+            updatedAt: new \DateTimeImmutable(),
+        );
+
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findById')->with(1)->andReturn($task);
+
+        $useCase = new ListOneTaskUseCase($taskRepository);
+
+        $response = $useCase->execute(1, new RequestingUser(id: 1, isAdmin: true));
+
+        $this->assertNotNull($response);
+        $this->assertSame(1, $response->id);
     }
 }

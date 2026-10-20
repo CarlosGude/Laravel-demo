@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property int $id
+ * @property int $user_id
  * @property string $name
  */
 class CategoryModel extends Model
@@ -21,6 +22,7 @@ class CategoryModel extends Model
     protected $table = 'categories';
 
     protected $fillable = [
+        CategoryColumn::UserId->value,
         CategoryColumn::Name->value,
     ];
 
@@ -34,6 +36,6 @@ class CategoryModel extends Model
 
     public function toEntity(): Category
     {
-        return Category::create(id: $this->id, name: $this->name);
+        return Category::create(id: $this->id, userId: $this->user_id, name: $this->name);
     }
 }

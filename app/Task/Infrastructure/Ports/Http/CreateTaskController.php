@@ -19,6 +19,7 @@ final readonly class CreateTaskController
         path: '/api/tasks',
         summary: 'Create a new task',
         tags: ['Tasks'],
+        security: [['bearerAuth' => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(ref: '#/components/schemas/TaskRequest')
@@ -29,13 +30,15 @@ final readonly class CreateTaskController
                 description: 'Task created',
                 content: new OA\JsonContent(ref: '#/components/schemas/Task')
             ),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
     public function __invoke(Request $request): JsonResponse
     {
         $portModel = CreateTaskPortModel::fromHttpRequest($request);
+        $requestingUser = RequestingUserFactory::fromRequest($request);
 
-        $task = $this->useCase->execute($portModel->toApplicationRequest());
+        $task = $this->useCase->execute($portModel->toApplicationRequest(), $requestingUser);
 
         return response()->json(CreateTaskPortModel::toHttpResponse($task), 201);
     }

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\Dto\Request\TaskFilterRequest;
 use App\Task\Application\UseCase\ListAllTaskUseCase;
 use App\Task\Domain\Entity\Category;
@@ -21,12 +22,13 @@ class ListAllTaskUseCaseTest extends TestCase
 
     public function test_execute_returns_a_response_for_every_persisted_task(): void
     {
-        $work = Category::create(1, 'Work');
+        $work = Category::create(1, 1, 'Work');
         $createdAt = new \DateTimeImmutable('2026-01-01T10:00:00+00:00');
         $updatedAt = new \DateTimeImmutable('2026-01-02T10:00:00+00:00');
 
         $task = Task::create(
             id: 1,
+            userId: 1,
             name: 'Buy milk',
             description: 'Whole milk, 2 liters',
             completed: false,
@@ -40,7 +42,7 @@ class ListAllTaskUseCaseTest extends TestCase
 
         $useCase = new ListAllTaskUseCase($taskRepository);
 
-        $responses = $useCase->execute();
+        $responses = $useCase->execute(new RequestingUser(id: 1, isAdmin: false));
 
         $this->assertCount(1, $responses);
         $this->assertSame(1, $responses[0]->id);
@@ -57,7 +59,7 @@ class ListAllTaskUseCaseTest extends TestCase
 
         $useCase = new ListAllTaskUseCase($taskRepository);
 
-        $this->assertSame([], $useCase->execute());
+        $this->assertSame([], $useCase->execute(new RequestingUser(id: 1, isAdmin: false)));
     }
 
     public function test_execute_translates_the_filter_request_into_a_domain_filter(): void
@@ -81,6 +83,30 @@ class ListAllTaskUseCaseTest extends TestCase
 
         $useCase = new ListAllTaskUseCase($taskRepository);
 
-        $this->assertSame([], $useCase->execute($filterRequest));
+        $this->assertSame([], $useCase->execute(new RequestingUser(id: 1, isAdmin: false), $filterRequest));
+    }
+
+    public function test_execute_scopes_the_filter_to_the_requesting_user_when_not_admin(): void
+    {
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findAll')
+            ->withArgs(fn (TaskFilter $filter): bool => $filter->ownerId === 42)
+            ->andReturn(new TaskCollection());
+
+        $useCase = new ListAllTaskUseCase($taskRepository);
+
+        $useCase->execute(new RequestingUser(id: 42, isAdmin: false));
+    }
+
+    public function test_execute_does_not_scope_the_filter_for_an_admin(): void
+    {
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findAll')
+            ->withArgs(fn (TaskFilter $filter): bool => $filter->ownerId === null)
+            ->andReturn(new TaskCollection());
+
+        $useCase = new ListAllTaskUseCase($taskRepository);
+
+        $useCase->execute(new RequestingUser(id: 42, isAdmin: true));
     }
 }
