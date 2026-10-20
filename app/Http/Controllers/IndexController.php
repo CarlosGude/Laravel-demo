@@ -1,13 +1,14 @@
 <?php
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 
 class IndexController extends Controller
 {
 
-    public function __invoke(): string
+    public function __invoke(): JsonResponse
     {
-        return 'Hello World!';
+        return response()->json(['message' => 'Hello World!']);
     }
 }
