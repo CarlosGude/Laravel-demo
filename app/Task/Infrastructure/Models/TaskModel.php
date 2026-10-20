@@ -3,7 +3,6 @@
 namespace App\Task\Infrastructure\Models;
 
 use App\Task\Domain\Entity\Task;
-use Database\Factories\TaskFactory;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +18,6 @@ use Illuminate\Support\Carbon;
  */
 class TaskModel extends Model
 {
-    /** @use HasFactory<TaskFactory> */
     use HasFactory;
 
     protected $table = 'tasks';
@@ -35,11 +33,6 @@ class TaskModel extends Model
     protected function casts(): array
     {
         return [TaskColumn::Completed->value => 'boolean'];
-    }
-
-    protected static function newFactory(): TaskFactory
-    {
-        return TaskFactory::new();
     }
 
     public function fillFromEntity(Task $task): static
