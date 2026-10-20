@@ -6,6 +6,7 @@ use App\Task\Application\UseCase\CreateTaskUseCase;
 use App\Task\Infrastructure\Ports\Models\CreateTaskPortModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 final readonly class CreateTaskController
 {
@@ -14,6 +15,22 @@ final readonly class CreateTaskController
     ) {
     }
 
+    #[OA\Post(
+        path: '/api/tasks',
+        summary: 'Create a new task',
+        tags: ['Tasks'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(ref: '#/components/schemas/TaskRequest')
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Task created',
+                content: new OA\JsonContent(ref: '#/components/schemas/Task')
+            ),
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $portModel = CreateTaskPortModel::fromHttpRequest($request);

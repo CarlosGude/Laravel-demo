@@ -2,12 +2,16 @@
 
 namespace Tests\Unit\Task\Application\UseCase;
 
+use App\Task\Application\Dto\Request\TaskFilterRequest;
 use App\Task\Application\UseCase\ListAllTaskUseCase;
 use App\Task\Domain\Entity\Category;
 use App\Task\Domain\Entity\CategoryCollection;
 use App\Task\Domain\Entity\Task;
 use App\Task\Domain\Entity\TaskCollection;
+use App\Task\Domain\Repository\SortDirection;
+use App\Task\Domain\Repository\TaskFilter;
 use App\Task\Domain\Repository\TaskRepositoryInterface;
+use App\Task\Domain\Repository\TaskSortField;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 
@@ -54,5 +58,29 @@ class ListAllTaskUseCaseTest extends TestCase
         $useCase = new ListAllTaskUseCase($taskRepository);
 
         $this->assertSame([], $useCase->execute());
+    }
+
+    public function test_execute_translates_the_filter_request_into_a_domain_filter(): void
+    {
+        $filterRequest = new TaskFilterRequest(
+            completed: true,
+            categoryName: 'Work',
+            sortBy: 'updated_at',
+            sortDirection: 'asc',
+        );
+
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findAll')
+            ->withArgs(function (TaskFilter $filter): bool {
+                return $filter->completed === true
+                    && $filter->categoryName === 'Work'
+                    && $filter->sortBy === TaskSortField::UpdatedAt
+                    && $filter->sortDirection === SortDirection::Ascending;
+            })
+            ->andReturn(new TaskCollection());
+
+        $useCase = new ListAllTaskUseCase($taskRepository);
+
+        $this->assertSame([], $useCase->execute($filterRequest));
     }
 }

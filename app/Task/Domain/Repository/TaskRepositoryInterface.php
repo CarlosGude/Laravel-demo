@@ -7,7 +7,7 @@ use App\Task\Domain\Entity\TaskCollection;
 
 interface TaskRepositoryInterface
 {
-    public function findAll(): TaskCollection;
+    public function findAll(?TaskFilter $filter = null): TaskCollection;
 
     public function findById(int $id): ?Task;
 

@@ -7,6 +7,7 @@ use App\Task\Domain\Exceptions\TaskNotFoundException;
 use App\Task\Infrastructure\Ports\Models\UpdateTaskPortModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 final readonly class UpdateTaskController
 {
@@ -15,6 +16,32 @@ final readonly class UpdateTaskController
     ) {
     }
 
+    #[OA\Put(
+        path: '/api/tasks/{id}',
+        summary: 'Update an existing task',
+        tags: ['Tasks'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'Task id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            ),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(ref: '#/components/schemas/TaskRequest')
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Task updated',
+                content: new OA\JsonContent(ref: '#/components/schemas/Task')
+            ),
+            new OA\Response(response: 404, description: 'Task not found'),
+        ]
+    )]
     public function __invoke(Request $request, int $id): JsonResponse
     {
         $portModel = UpdateTaskPortModel::fromHttpRequest($request, $id);
