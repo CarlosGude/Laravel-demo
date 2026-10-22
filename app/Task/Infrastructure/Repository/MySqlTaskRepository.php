@@ -79,4 +79,9 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
 
         return $model->toEntity();
     }
+
+    public function delete(Task $task): void
+    {
+        TaskModel::query()->find($task->getPersistedId())?->delete();
+    }
 }
