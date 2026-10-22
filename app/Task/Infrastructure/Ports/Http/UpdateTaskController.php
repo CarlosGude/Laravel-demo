@@ -13,6 +13,7 @@ final readonly class UpdateTaskController
 {
     public function __construct(
         private UpdateTaskUseCase $useCase,
+        private RequestingUserProviderInterface $requestingUserProvider,
     ) {
     }
 
@@ -49,7 +50,7 @@ final readonly class UpdateTaskController
     public function __invoke(Request $request, string $id): JsonResponse
     {
         $portModel = UpdateTaskPortModel::fromHttpRequest($request, $id);
-        $requestingUser = RequestingUserFactory::fromRequest($request);
+        $requestingUser = $this->requestingUserProvider->fromRequest($request);
 
         try {
             $task = $this->useCase->execute($portModel->toApplicationRequest(), $requestingUser);

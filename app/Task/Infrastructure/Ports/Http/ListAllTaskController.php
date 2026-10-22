@@ -12,6 +12,7 @@ final readonly class ListAllTaskController
 {
     public function __construct(
         private ListAllTaskUseCase $useCase,
+        private RequestingUserProviderInterface $requestingUserProvider,
     ) {
     }
 
@@ -108,7 +109,7 @@ final readonly class ListAllTaskController
     public function __invoke(Request $request): JsonResponse
     {
         $portModel = ListAllTaskPortModel::fromHttpRequest($request);
-        $requestingUser = RequestingUserFactory::fromRequest($request);
+        $requestingUser = $this->requestingUserProvider->fromRequest($request);
 
         $tasks = $this->useCase->execute($requestingUser, $portModel->toApplicationRequest());
 

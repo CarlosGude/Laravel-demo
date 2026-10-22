@@ -7,9 +7,9 @@ use App\User\Domain\Entity\UserRole;
 use App\User\Infrastructure\Models\UserModel;
 use Illuminate\Http\Request;
 
-final class RequestingUserFactory
+final class SanctumRequestingUserProvider implements RequestingUserProviderInterface
 {
-    public static function fromRequest(Request $request): RequestingUser
+    public function fromRequest(Request $request): RequestingUser
     {
         /** @var UserModel $user */
         $user = $request->user();

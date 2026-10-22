@@ -158,14 +158,16 @@ require_once __DIR__.'/../app/Task/Infrastructure/Routes/api.php';
 
 **Why:** a module owns its own routes and migrations — deleting `app/Task` removes its routes and
 migrations with it, instead of leaving orphaned entries in a central `routes/api.php` or
-`database/migrations/`. This is one-directional, not full isolation: `Task` depends on `User`
-(`RequestingUserFactory` reads `App\User\Domain\Entity\UserRole` and `App\User\Infrastructure\Models\UserModel`
-to turn the authenticated request into a `RequestingUser`), because task ownership and admin checks are
-meaningless without knowing who the user is. `User` has no dependency back on `Task`. Deleting `Task`
-is safe; deleting `User` is not — that asymmetry matches the actual domain relationship (tasks belong
-to users; users don't belong to tasks) and isn't itself a problem, but it does mean "modules are
-extractable" should be read as "each module's routes/migrations/bindings are self-registering," not as
-"every module is fully independent of every other." The
+`database/migrations/`. This is one-directional, not full isolation: `Task` depends on `User`, because
+task ownership and admin checks are meaningless without knowing who the user is. That dependency is
+expressed through `Task`'s own `RequestingUserProviderInterface` (§7 shows where it's consumed) rather
+than controllers reaching for `App\User\*` classes directly — `SanctumRequestingUserProvider` is the
+one file in the `Task` module allowed to import `App\User\Domain\Entity\UserRole` and
+`App\User\Infrastructure\Models\UserModel`, bound to the interface in `TaskServiceProvider`. `User` has
+no dependency back on `Task`. Deleting `Task` is safe; deleting `User` is not — that asymmetry matches
+the actual domain relationship (tasks belong to users; users don't belong to tasks) and isn't itself a
+problem, but it does mean "modules are extractable" should be read as "each module's routes/migrations/
+bindings are self-registering," not as "every module is fully independent of every other." The
 `migrations:modules` console command (`app/Console/Commands/ListModuleMigrationsCommand.php`) exists
 specifically to give a single cross-module view back, since migrations are no longer in one folder.
 
@@ -177,9 +179,14 @@ concept, only a flat `routes/` and `database/migrations/`.
 
 ```php
 final readonly class CreateTaskController {
+    public function __construct(
+        private CreateTaskUseCase $useCase,
+        private RequestingUserProviderInterface $requestingUserProvider,
+    ) {}
+
     public function __invoke(Request $request): JsonResponse {
         $portModel = CreateTaskPortModel::fromHttpRequest($request);
-        $requestingUser = RequestingUserFactory::fromRequest($request);
+        $requestingUser = $this->requestingUserProvider->fromRequest($request);
         $task = $this->useCase->execute($portModel->toApplicationRequest(), $requestingUser);
         return response()->json(CreateTaskPortModel::toHttpResponse($task), 201);
     }

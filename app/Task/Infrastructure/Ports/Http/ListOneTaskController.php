@@ -12,6 +12,7 @@ final readonly class ListOneTaskController
 {
     public function __construct(
         private ListOneTaskUseCase $useCase,
+        private RequestingUserProviderInterface $requestingUserProvider,
     ) {
     }
 
@@ -44,7 +45,7 @@ final readonly class ListOneTaskController
     public function __invoke(string $id, Request $request): JsonResponse
     {
         $portModel = ListOneTaskPortModel::fromHttpRequest($id);
-        $requestingUser = RequestingUserFactory::fromRequest($request);
+        $requestingUser = $this->requestingUserProvider->fromRequest($request);
 
         $task = $this->useCase->execute($portModel->id, $requestingUser);
 

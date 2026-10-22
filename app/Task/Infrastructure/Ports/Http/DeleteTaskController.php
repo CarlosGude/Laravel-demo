@@ -14,6 +14,7 @@ final readonly class DeleteTaskController
 {
     public function __construct(
         private DeleteTaskUseCase $useCase,
+        private RequestingUserProviderInterface $requestingUserProvider,
     ) {
     }
 
@@ -42,7 +43,7 @@ final readonly class DeleteTaskController
     public function __invoke(Request $request, string $id): JsonResponse|Response
     {
         $portModel = DeleteTaskPortModel::fromHttpRequest($id);
-        $requestingUser = RequestingUserFactory::fromRequest($request);
+        $requestingUser = $this->requestingUserProvider->fromRequest($request);
 
         try {
             $this->useCase->execute($portModel->id, $requestingUser);
