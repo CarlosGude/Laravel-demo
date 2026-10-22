@@ -288,14 +288,9 @@ exposed identifier, while Doctrine still uses an auto-increment or sequence-back
 
 These aren't architectural decisions, they're gaps — listed here instead of left for a reader to find:
 
-- **No `DELETE /api/tasks/{id}`.** Only create/list/update exist; a task can be marked completed but
-  never removed.
-- **No pagination.** `GET /api/tasks` returns every matching task in one response; on a large dataset
-  this would need a `page`/`per_page` (or cursor) parameter threaded through `TaskFilter` and the
-  repository's `findAll()`.
-- **Sanctum tokens don't expire** (`config/sanctum.php`'s `expiration` is `null`). There's no refresh
-  flow and no revocation beyond `LogoutUserController` deleting the current token — acceptable for a
-  demo, not for anything that outlives a demo.
+- **Sanctum tokens expire after `SANCTUM_TOKEN_EXPIRATION_MINUTES`** (default 1440, i.e. 24h), but
+  there's still no refresh flow — a client must log in again once its token expires. Revocation beyond
+  expiry is still limited to `LogoutUserController` deleting the current token.
 - **`Task` depends on `User`** for authorization (see §6) — the two modules are not symmetrically
   independent.
 
