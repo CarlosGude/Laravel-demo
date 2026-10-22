@@ -272,10 +272,22 @@
 									"value": "desc",
 									"description": "asc | desc",
 									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "page number; when set, the response becomes {data, meta} instead of a bare array",
+									"disabled": true
+								},
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "tasks per page (max 100); ignored unless page is set",
+									"disabled": true
 								}
 							]
 						},
-						"description": "Lists the authenticated user's tasks (every task, for admins). All query parameters are optional and disabled by default \u2014 enable the ones you want to try."
+						"description": "Lists the authenticated user's tasks (every task, for admins). All query parameters are optional and disabled by default \u2014 enable the ones you want to try. With no `page`, returns a bare array of every matching task. With `page`, returns `{data, meta}` instead, where `meta` holds `page`/`per_page`/`total`/`last_page`."
 					},
 					"response": []
 				},
@@ -339,6 +351,31 @@
 							]
 						},
 						"description": "Replaces a task's fields and category assignments. Only the owner or an admin can update it."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Deletes a task. Returns 204 on success, or 404 both when the task doesn't exist and when it belongs to another (non-admin) user."
 					},
 					"response": []
 				}
