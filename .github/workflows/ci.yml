@@ -25,7 +25,8 @@ jobs:
           tools: composer:v2
 
       - name: Verify PHP patch version (CVE-2026-109618 / CVE-2026-109619)
-        run: php -r 'exit(version_compare(PHP_VERSION, "8.4.27", ">=") ? 0 : 1);' || { echo "PHP $(php -r 'echo PHP_VERSION;') is below the patched 8.4.27 baseline"; exit 1; }
+        run: |
+          php -r 'exit(version_compare(PHP_VERSION, "8.4.27", ">=") ? 0 : 1);' || { echo "PHP $(php -r 'echo PHP_VERSION;') is below the patched 8.4.27 baseline"; exit 1; }
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -58,7 +59,8 @@ jobs:
           tools: composer:v2
 
       - name: Verify PHP patch version (CVE-2026-109618 / CVE-2026-109619)
-        run: php -r 'exit(version_compare(PHP_VERSION, "8.4.27", ">=") ? 0 : 1);' || { echo "PHP $(php -r 'echo PHP_VERSION;') is below the patched 8.4.27 baseline"; exit 1; }
+        run: |
+          php -r 'exit(version_compare(PHP_VERSION, "8.4.27", ">=") ? 0 : 1);' || { echo "PHP $(php -r 'echo PHP_VERSION;') is below the patched 8.4.27 baseline"; exit 1; }
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -91,7 +93,8 @@ jobs:
           tools: composer:v2
 
       - name: Verify PHP patch version (CVE-2026-109618 / CVE-2026-109619)
-        run: php -r 'exit(version_compare(PHP_VERSION, "8.4.27", ">=") ? 0 : 1);' || { echo "PHP $(php -r 'echo PHP_VERSION;') is below the patched 8.4.27 baseline"; exit 1; }
+        run: |
+          php -r 'exit(version_compare(PHP_VERSION, "8.4.27", ">=") ? 0 : 1);' || { echo "PHP $(php -r 'echo PHP_VERSION;') is below the patched 8.4.27 baseline"; exit 1; }
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -119,7 +122,8 @@ jobs:
           tools: composer:v2
 
       - name: Verify PHP patch version (CVE-2026-109618 / CVE-2026-109619)
-        run: php -r 'exit(version_compare(PHP_VERSION, "8.4.27", ">=") ? 0 : 1);' || { echo "PHP $(php -r 'echo PHP_VERSION;') is below the patched 8.4.27 baseline"; exit 1; }
+        run: |
+          php -r 'exit(version_compare(PHP_VERSION, "8.4.27", ">=") ? 0 : 1);' || { echo "PHP $(php -r 'echo PHP_VERSION;') is below the patched 8.4.27 baseline"; exit 1; }
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
