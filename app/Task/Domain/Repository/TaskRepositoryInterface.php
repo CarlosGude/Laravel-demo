@@ -9,6 +9,8 @@ interface TaskRepositoryInterface
 {
     public function findAll(?TaskFilter $filter = null): TaskCollection;
 
+    public function count(?TaskFilter $filter = null): int;
+
     public function findByUuid(string $uuid): ?Task;
 
     public function create(Task $task): Task;

@@ -25,6 +25,29 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
     {
         $filter ??= new TaskFilter();
 
+        $query = $this->filteredQuery($filter);
+
+        $query->orderBy($filter->sortBy->value, $filter->sortDirection->value);
+
+        if ($filter->page !== null) {
+            $query->forPage($filter->page, $filter->perPage ?? 15);
+        }
+
+        return TaskCollection::fromArray(
+            $query->get()->map(fn (TaskModel $model): Task => $model->toEntity())->all()
+        );
+    }
+
+    public function count(?TaskFilter $filter = null): int
+    {
+        return $this->filteredQuery($filter ?? new TaskFilter())->count();
+    }
+
+    /**
+     * @return Builder<TaskModel>
+     */
+    private function filteredQuery(TaskFilter $filter): Builder
+    {
         $query = TaskModel::query()->with('categories');
 
         if ($filter->ownerId !== null) {
@@ -50,15 +73,7 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
             );
         }
 
-        $query->orderBy($filter->sortBy->value, $filter->sortDirection->value);
-
-        if ($filter->page !== null) {
-            $query->forPage($filter->page, $filter->perPage ?? 15);
-        }
-
-        return TaskCollection::fromArray(
-            $query->get()->map(fn (TaskModel $model): Task => $model->toEntity())->all()
-        );
+        return $query;
     }
 
     public function create(Task $task): Task

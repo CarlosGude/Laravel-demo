@@ -71,7 +71,7 @@ final readonly class ListAllTaskPortModel
     }
 
     /**
-     * @return array<int, array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}>|array{data: array<int, array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}>, meta: array{page: int, per_page: int}}
+     * @return array<int, array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}>|array{data: array<int, array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}>, meta: array{page: int, per_page: int, total: int, last_page: int}}
      */
     public static function toHttpResponse(TaskListResponse $response): array
     {
@@ -97,6 +97,8 @@ final readonly class ListAllTaskPortModel
             'meta' => [
                 'page' => $response->page,
                 'per_page' => $response->perPage,
+                'total' => $response->total,
+                'last_page' => $response->lastPage,
             ],
         ];
     }

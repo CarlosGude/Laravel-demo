@@ -22,7 +22,7 @@ final readonly class ListAllTaskController
             .'completion status, a single date or a date range, and a category, plus sorting by creation or '
             .'modification date in ascending or descending order. With no `page`, returns a bare array of every '
             .'matching task. With `page`, returns `{data, meta}` instead, where `data` holds that page\'s tasks '
-            .'and `meta` holds `page`/`per_page`.',
+            .'and `meta` holds `page`/`per_page`/`total`/`last_page`.',
         tags: ['Tasks'],
         security: [['bearerAuth' => []]],
         parameters: [

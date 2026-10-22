@@ -121,6 +121,9 @@ class ListAllTaskUseCaseTest extends TestCase
         $taskRepository->expects('findAll')
             ->withArgs(fn (TaskFilter $filter): bool => $filter->page === 2 && $filter->perPage === 5)
             ->andReturn(new TaskCollection());
+        $taskRepository->expects('count')
+            ->withArgs(fn (TaskFilter $filter): bool => $filter->page === 2 && $filter->perPage === 5)
+            ->andReturn(12);
 
         $useCase = new ListAllTaskUseCase($taskRepository);
 
@@ -128,6 +131,8 @@ class ListAllTaskUseCaseTest extends TestCase
 
         $this->assertSame(2, $response->page);
         $this->assertSame(5, $response->perPage);
+        $this->assertSame(12, $response->total);
+        $this->assertSame(3, $response->lastPage);
     }
 
     public function test_execute_defaults_per_page_to_fifteen_when_only_page_is_given(): void
@@ -138,11 +143,42 @@ class ListAllTaskUseCaseTest extends TestCase
         $taskRepository->expects('findAll')
             ->withArgs(fn (TaskFilter $filter): bool => $filter->page === 1 && $filter->perPage === 15)
             ->andReturn(new TaskCollection());
+        $taskRepository->expects('count')->andReturn(0);
 
         $useCase = new ListAllTaskUseCase($taskRepository);
 
         $response = $useCase->execute(new RequestingUser(id: 1, isAdmin: false), $filterRequest);
 
         $this->assertSame(15, $response->perPage);
+    }
+
+    public function test_execute_does_not_count_when_no_page_is_requested(): void
+    {
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findAll')->andReturn(new TaskCollection());
+        $taskRepository->expects('count')->never();
+
+        $useCase = new ListAllTaskUseCase($taskRepository);
+
+        $response = $useCase->execute(new RequestingUser(id: 1, isAdmin: false));
+
+        $this->assertNull($response->total);
+        $this->assertNull($response->lastPage);
+    }
+
+    public function test_execute_reports_a_last_page_of_one_when_there_are_no_results(): void
+    {
+        $filterRequest = new TaskFilterRequest(page: 1, perPage: 5);
+
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findAll')->andReturn(new TaskCollection());
+        $taskRepository->expects('count')->andReturn(0);
+
+        $useCase = new ListAllTaskUseCase($taskRepository);
+
+        $response = $useCase->execute(new RequestingUser(id: 1, isAdmin: false), $filterRequest);
+
+        $this->assertSame(0, $response->total);
+        $this->assertSame(1, $response->lastPage);
     }
 }

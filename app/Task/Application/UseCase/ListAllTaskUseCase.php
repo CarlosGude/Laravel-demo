@@ -53,6 +53,18 @@ final readonly class ListAllTaskUseCase
             $tasks->toArray()
         );
 
-        return new TaskListResponse($responses, $filterRequest->page, $perPage);
+        if ($filterRequest->page === null) {
+            return new TaskListResponse($responses);
+        }
+
+        $total = $this->taskRepository->count($filter);
+
+        return new TaskListResponse(
+            tasks: $responses,
+            page: $filterRequest->page,
+            perPage: $perPage,
+            total: $total,
+            lastPage: (int) max(1, ceil($total / $perPage)),
+        );
     }
 }

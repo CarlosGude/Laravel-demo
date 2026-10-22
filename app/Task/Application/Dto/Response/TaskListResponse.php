@@ -11,6 +11,8 @@ final readonly class TaskListResponse
         public array $tasks,
         public ?int $page = null,
         public ?int $perPage = null,
+        public ?int $total = null,
+        public ?int $lastPage = null,
     ) {
 
     }

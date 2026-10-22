@@ -181,6 +181,8 @@ class ListAllTaskControllerTest extends TestCase
         $response->assertJsonCount(2, 'data');
         $response->assertJsonPath('meta.page', 1);
         $response->assertJsonPath('meta.per_page', 2);
+        $response->assertJsonPath('meta.total', 3);
+        $response->assertJsonPath('meta.last_page', 2);
         $response->assertJsonPath('data.0.title', 'First');
         $response->assertJsonPath('data.1.title', 'Second');
     }
@@ -197,6 +199,8 @@ class ListAllTaskControllerTest extends TestCase
         $response->assertOk();
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('meta.page', 2);
+        $response->assertJsonPath('meta.total', 3);
+        $response->assertJsonPath('meta.last_page', 2);
         $response->assertJsonPath('data.0.title', 'Third');
     }
 
