@@ -11,6 +11,8 @@ final readonly class TaskFilterRequest
         public ?string $categoryName = null,
         public string $sortBy = 'created_at',
         public string $sortDirection = 'desc',
+        public ?int $page = null,
+        public ?int $perPage = null,
     ) {
     }
 }

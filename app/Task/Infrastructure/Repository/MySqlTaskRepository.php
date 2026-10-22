@@ -52,6 +52,10 @@ final class MySqlTaskRepository implements TaskRepositoryInterface
 
         $query->orderBy($filter->sortBy->value, $filter->sortDirection->value);
 
+        if ($filter->page !== null) {
+            $query->forPage($filter->page, $filter->perPage ?? 15);
+        }
+
         return TaskCollection::fromArray(
             $query->get()->map(fn (TaskModel $model): Task => $model->toEntity())->all()
         );

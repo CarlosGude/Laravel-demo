@@ -12,6 +12,8 @@ final readonly class TaskFilter
         public ?string $categoryName = null,
         public TaskSortField $sortBy = TaskSortField::CreatedAt,
         public SortDirection $sortDirection = SortDirection::Descending,
+        public ?int $page = null,
+        public ?int $perPage = null,
     ) {
     }
 }

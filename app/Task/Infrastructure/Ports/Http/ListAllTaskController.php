@@ -20,7 +20,9 @@ final readonly class ListAllTaskController
         summary: 'List tasks, optionally filtered and sorted',
         description: 'Returns the authenticated user\'s tasks (or every task, for admins). Supports filtering by '
             .'completion status, a single date or a date range, and a category, plus sorting by creation or '
-            .'modification date in ascending or descending order.',
+            .'modification date in ascending or descending order. With no `page`, returns a bare array of every '
+            .'matching task. With `page`, returns `{data, meta}` instead, where `data` holds that page\'s tasks '
+            .'and `meta` holds `page`/`per_page`.',
         tags: ['Tasks'],
         security: [['bearerAuth' => []]],
         parameters: [
@@ -73,6 +75,21 @@ final readonly class ListAllTaskController
                 in: 'query',
                 required: false,
                 schema: new OA\Schema(type: 'string', enum: ['asc', 'desc'], default: 'desc')
+            ),
+            new OA\Parameter(
+                name: 'page',
+                description: 'Page number. When present, the response is wrapped as {data, meta} instead of a '
+                    .'bare array',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer', minimum: 1)
+            ),
+            new OA\Parameter(
+                name: 'per_page',
+                description: 'Tasks per page (defaults to 15, max 100). Ignored unless page is present',
+                in: 'query',
+                required: false,
+                schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 100)
             ),
         ],
         responses: [

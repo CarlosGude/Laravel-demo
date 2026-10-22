@@ -4,6 +4,7 @@ namespace App\Task\Application\UseCase;
 
 use App\Task\Application\Dto\Request\RequestingUser;
 use App\Task\Application\Dto\Request\TaskFilterRequest;
+use App\Task\Application\Dto\Response\TaskListResponse;
 use App\Task\Application\Dto\Response\TaskResponse;
 use App\Task\Domain\Entity\Task;
 use App\Task\Domain\Repository\SortDirection;
@@ -19,12 +20,11 @@ final readonly class ListAllTaskUseCase
 
     }
 
-    /**
-     * @return array<int, TaskResponse>
-     */
-    public function execute(RequestingUser $requestingUser, ?TaskFilterRequest $filterRequest = null): array
+    public function execute(RequestingUser $requestingUser, ?TaskFilterRequest $filterRequest = null): TaskListResponse
     {
         $filterRequest ??= new TaskFilterRequest();
+
+        $perPage = $filterRequest->page !== null ? ($filterRequest->perPage ?? 15) : null;
 
         $filter = new TaskFilter(
             ownerId: $requestingUser->isAdmin ? null : $requestingUser->id,
@@ -34,11 +34,13 @@ final readonly class ListAllTaskUseCase
             categoryName: $filterRequest->categoryName,
             sortBy: TaskSortField::from($filterRequest->sortBy),
             sortDirection: SortDirection::from($filterRequest->sortDirection),
+            page: $filterRequest->page,
+            perPage: $perPage,
         );
 
         $tasks = $this->taskRepository->findAll($filter);
 
-        return array_map(
+        $responses = array_map(
             fn (Task $task): TaskResponse => new TaskResponse(
                 uuid: $task->getUuid(),
                 title: $task->getName(),
@@ -50,5 +52,7 @@ final readonly class ListAllTaskUseCase
             ),
             $tasks->toArray()
         );
+
+        return new TaskListResponse($responses, $filterRequest->page, $perPage);
     }
 }

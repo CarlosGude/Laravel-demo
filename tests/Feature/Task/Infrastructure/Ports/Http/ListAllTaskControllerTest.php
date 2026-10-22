@@ -167,4 +167,45 @@ class ListAllTaskControllerTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_it_paginates_results_when_page_is_given(): void
+    {
+        $user = $this->actingAsUser();
+        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'First', 'created_at' => self::DATE_JAN]);
+        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Second', 'created_at' => self::DATE_FEB]);
+        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Third', 'created_at' => '2026-03-01 10:00:00']);
+
+        $response = $this->getJson('/api/tasks?page=1&per_page=2&sort_by=created_at&sort_direction=asc');
+
+        $response->assertOk();
+        $response->assertJsonCount(2, 'data');
+        $response->assertJsonPath('meta.page', 1);
+        $response->assertJsonPath('meta.per_page', 2);
+        $response->assertJsonPath('data.0.title', 'First');
+        $response->assertJsonPath('data.1.title', 'Second');
+    }
+
+    public function test_it_returns_the_second_page_of_results(): void
+    {
+        $user = $this->actingAsUser();
+        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'First', 'created_at' => self::DATE_JAN]);
+        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Second', 'created_at' => self::DATE_FEB]);
+        TaskModel::factory()->create(['user_id' => $user->id, 'name' => 'Third', 'created_at' => '2026-03-01 10:00:00']);
+
+        $response = $this->getJson('/api/tasks?page=2&per_page=2&sort_by=created_at&sort_direction=asc');
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('meta.page', 2);
+        $response->assertJsonPath('data.0.title', 'Third');
+    }
+
+    public function test_it_returns_a_validation_error_for_an_invalid_page(): void
+    {
+        $this->actingAsUser();
+
+        $response = $this->getJson('/api/tasks?page=0');
+
+        $response->assertStatus(422);
+    }
 }

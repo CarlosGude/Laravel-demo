@@ -3,6 +3,7 @@
 namespace App\Task\Infrastructure\Ports\Models;
 
 use App\Task\Application\Dto\Request\TaskFilterRequest;
+use App\Task\Application\Dto\Response\TaskListResponse;
 use App\Task\Application\Dto\Response\TaskResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,6 +17,8 @@ final readonly class ListAllTaskPortModel
         public ?string $categoryName,
         public string $sortBy,
         public string $sortDirection,
+        public ?int $page,
+        public ?int $perPage,
     ) {
     }
 
@@ -29,6 +32,8 @@ final readonly class ListAllTaskPortModel
             'category' => ['sometimes', 'string'],
             'sort_by' => ['sometimes', Rule::in(['created_at', 'updated_at'])],
             'sort_direction' => ['sometimes', Rule::in(['asc', 'desc'])],
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ]);
 
         if (isset($validated['date'])) {
@@ -46,6 +51,8 @@ final readonly class ListAllTaskPortModel
             categoryName: $validated['category'] ?? null,
             sortBy: $validated['sort_by'] ?? 'created_at',
             sortDirection: $validated['sort_direction'] ?? 'desc',
+            page: $validated['page'] ?? null,
+            perPage: $validated['per_page'] ?? null,
         );
     }
 
@@ -58,16 +65,17 @@ final readonly class ListAllTaskPortModel
             categoryName: $this->categoryName,
             sortBy: $this->sortBy,
             sortDirection: $this->sortDirection,
+            page: $this->page,
+            perPage: $this->perPage,
         );
     }
 
     /**
-     * @param TaskResponse[] $tasks
-     * @return array<int, array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}>
+     * @return array<int, array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}>|array{data: array<int, array{id: string, title: string, description: string, completed: bool, created_at: ?string, updated_at: ?string, categories: array<int, string>}>, meta: array{page: int, per_page: int}}
      */
-    public static function toHttpResponse(array $tasks): array
+    public static function toHttpResponse(TaskListResponse $response): array
     {
-        return array_map(
+        $tasks = array_map(
             static fn (TaskResponse $task): array => [
                 'id' => $task->uuid,
                 'title' => $task->title,
@@ -77,7 +85,19 @@ final readonly class ListAllTaskPortModel
                 'updated_at' => $task->updatedAt?->format(DATE_ATOM),
                 'categories' => $task->categories,
             ],
-            $tasks
+            $response->tasks
         );
+
+        if ($response->page === null) {
+            return $tasks;
+        }
+
+        return [
+            'data' => $tasks,
+            'meta' => [
+                'page' => $response->page,
+                'per_page' => $response->perPage,
+            ],
+        ];
     }
 }

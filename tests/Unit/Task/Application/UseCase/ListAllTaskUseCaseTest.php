@@ -43,14 +43,16 @@ class ListAllTaskUseCaseTest extends TestCase
 
         $useCase = new ListAllTaskUseCase($taskRepository);
 
-        $responses = $useCase->execute(new RequestingUser(id: 1, isAdmin: false));
+        $response = $useCase->execute(new RequestingUser(id: 1, isAdmin: false));
 
-        $this->assertCount(1, $responses);
-        $this->assertSame('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', $responses[0]->uuid);
-        $this->assertSame('Buy milk', $responses[0]->title);
-        $this->assertSame('Whole milk, 2 liters', $responses[0]->description);
-        $this->assertFalse($responses[0]->completed);
-        $this->assertSame(['Work'], $responses[0]->categories);
+        $this->assertCount(1, $response->tasks);
+        $this->assertSame('b6b8a9b0-6a6a-4a6a-8a6a-6a6a6a6a6a6a', $response->tasks[0]->uuid);
+        $this->assertSame('Buy milk', $response->tasks[0]->title);
+        $this->assertSame('Whole milk, 2 liters', $response->tasks[0]->description);
+        $this->assertFalse($response->tasks[0]->completed);
+        $this->assertSame(['Work'], $response->tasks[0]->categories);
+        $this->assertNull($response->page);
+        $this->assertNull($response->perPage);
     }
 
     public function test_execute_returns_an_empty_array_when_there_are_no_tasks(): void
@@ -60,7 +62,7 @@ class ListAllTaskUseCaseTest extends TestCase
 
         $useCase = new ListAllTaskUseCase($taskRepository);
 
-        $this->assertSame([], $useCase->execute(new RequestingUser(id: 1, isAdmin: false)));
+        $this->assertSame([], $useCase->execute(new RequestingUser(id: 1, isAdmin: false))->tasks);
     }
 
     public function test_execute_translates_the_filter_request_into_a_domain_filter(): void
@@ -84,7 +86,7 @@ class ListAllTaskUseCaseTest extends TestCase
 
         $useCase = new ListAllTaskUseCase($taskRepository);
 
-        $this->assertSame([], $useCase->execute(new RequestingUser(id: 1, isAdmin: false), $filterRequest));
+        $this->assertSame([], $useCase->execute(new RequestingUser(id: 1, isAdmin: false), $filterRequest)->tasks);
     }
 
     public function test_execute_scopes_the_filter_to_the_requesting_user_when_not_admin(): void
@@ -109,5 +111,38 @@ class ListAllTaskUseCaseTest extends TestCase
         $useCase = new ListAllTaskUseCase($taskRepository);
 
         $useCase->execute(new RequestingUser(id: 42, isAdmin: true));
+    }
+
+    public function test_execute_paginates_when_a_page_is_requested(): void
+    {
+        $filterRequest = new TaskFilterRequest(page: 2, perPage: 5);
+
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findAll')
+            ->withArgs(fn (TaskFilter $filter): bool => $filter->page === 2 && $filter->perPage === 5)
+            ->andReturn(new TaskCollection());
+
+        $useCase = new ListAllTaskUseCase($taskRepository);
+
+        $response = $useCase->execute(new RequestingUser(id: 1, isAdmin: false), $filterRequest);
+
+        $this->assertSame(2, $response->page);
+        $this->assertSame(5, $response->perPage);
+    }
+
+    public function test_execute_defaults_per_page_to_fifteen_when_only_page_is_given(): void
+    {
+        $filterRequest = new TaskFilterRequest(page: 1);
+
+        $taskRepository = \Mockery::mock(TaskRepositoryInterface::class);
+        $taskRepository->expects('findAll')
+            ->withArgs(fn (TaskFilter $filter): bool => $filter->page === 1 && $filter->perPage === 15)
+            ->andReturn(new TaskCollection());
+
+        $useCase = new ListAllTaskUseCase($taskRepository);
+
+        $response = $useCase->execute(new RequestingUser(id: 1, isAdmin: false), $filterRequest);
+
+        $this->assertSame(15, $response->perPage);
     }
 }
